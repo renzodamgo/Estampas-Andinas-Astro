@@ -1,14 +1,21 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { Image } from "astro:assets";
+import bgImage from "../../public/Assets/bg.webp";
+import estampaMobile from "../../public/Assets/estampa-mobile.webp";
+import estampaDesktop from "../../public/Assets/estampa-desktop.webp";
 ---
 
 <Layout title="Estampas Andinas por Orestes Damián">
   <main>
     <div class="absolute w-screen h-screen z-0 overflow-hidden">
-      <img
-        class="object-cover w-full h-full object-center md:scale-100 brightness-90 md:brightness-95"
-        src="Assets/bg.webp"
+      <Image
+        src={bgImage}
         alt="Tarma Estampas Andinas"
+        class="object-cover w-full h-full object-center md:scale-100 brightness-90 md:brightness-95"
+        loading="eager"
+        width={1920}
+        height={1080}
       />
     </div>
     <div
@@ -26,15 +33,21 @@ import Layout from "../layouts/Layout.astro";
                   Música andina, huaynos tarmeños y más.
                 </p>
               </div>
-              <img
-                src="Assets/estampa-mobile.webp"
+              <Image
+                src={estampaMobile}
+                alt="Estampas Andinas"
                 class="w-80 pb-10 pt-14 md:pt-0 md:pb-8 md:hidden"
-                alt="Estampas Andinas"
+                loading="eager"
+                width={320}
+                height={320}
               />
-              <img
-                src="Assets/estampa-desktop.webp"
-                class="w-80 pb-10 pt-14 md:pt-0 md:pb-8 hidden md:block md:w-[80%] -translate-x-10"
+              <Image
+                src={estampaDesktop}
                 alt="Estampas Andinas"
+                class="w-80 pb-10 pt-14 md:pt-0 md:pb-8 hidden md:block md:w-[80%] -translate-x-10"
+                loading="eager"
+                width={640}
+                height={640}
               />
               <p
                 class="text-2xl text-white drop-shadow-2xl w-[85%] text-center pb-2 md:hidden"
@@ -65,4 +78,6 @@ import Layout from "../layouts/Layout.astro";
   </main>
 </Layout>
 
-<style></style>
+<style>
+  /* Add any custom styles here */
+</style>
