@@ -22,7 +22,7 @@ import estampaDesktop from "../../public/Assets/estampa-desktop.webp";
       class="absolute w-screen h-screen bg-gradient-to-b md:bg-gradient-to-r from-black via-transparent to-transparent opacity-50"
     >
     </div>
-    <div class="mx-auto max-w-[1200px] md:px-12">
+    <div class="mx-auto max-w-[1200px] md:px-12 relative">
       <div class="grid md:grid-cols-2 md:place-items-center md:h-screen">
         <div>
           <div class="relative">
@@ -48,7 +48,7 @@ import estampaDesktop from "../../public/Assets/estampa-desktop.webp";
               <Image
                 src={estampaMobile}
                 alt="Estampas Andinas"
-                class="w-80 pb-6 pt-6 md:pt-0 md:pb-8 md:hidden"
+                class="w-80 pb-4 pt-6 md:pt-0 md:pb-8 md:hidden"
                 loading="eager"
                 width={320}
                 height={320}
@@ -87,7 +87,7 @@ import estampaDesktop from "../../public/Assets/estampa-desktop.webp";
         </div>
       </div>
       <a
-        class="whatsapp-link custom-bounce fixed right-4 bottom-4 flex justify-end items-start gap-2"
+        class="whatsapp-link custom-bounce fixed right-4 bottom-4 flex justify-end items-start gap-2 z-50"
         href="https://wa.me/51964624589?text=Hola%2C%20quisiera%20mandar%20un%20mensaje"
         target="_blank"
       >
