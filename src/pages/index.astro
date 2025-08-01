@@ -86,6 +86,22 @@ import estampaDesktop from "../../public/Assets/estampa-desktop.webp";
           </div>
         </div>
       </div>
+      <a
+        class="whatsapp-link custom-bounce absolute right-4 bottom-4 flex justify-end items-start gap-2"
+        href="https://wa.me/51964624589?text=Hola%2C%20quisiera%20mandar%20un%20mensaje"
+        target="_blank"
+      >
+        <div
+          class="relative chat-bubble bg-white font-serif px-2 py-1 rounded-sm border-solid border border-black"
+        >
+          <p>Envía tu mensaje por WhatsApp!</p>
+        </div>
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+          alt="WhatsApp"
+          style="width:68px; height:68px;"
+        />
+      </a>
     </div>
 
     <div class="flex justify-center w-full items-center">
@@ -102,6 +118,22 @@ import estampaDesktop from "../../public/Assets/estampa-desktop.webp";
   </main>
 
   <style>
-    /* Add any custom styles here */
+    @keyframes custom-bounce {
+      0%,
+      100% {
+        transform: translateY(0);
+        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+      }
+      /* The peak of the bounce */
+      50% {
+        transform: translateY(-25%);
+        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+      }
+    }
+
+    /* Applies the animation on hover to any element with this class */
+    .whatsapp-link:hover {
+      animation: custom-bounce 1s infinite;
+    }
   </style>
 </Layout>
