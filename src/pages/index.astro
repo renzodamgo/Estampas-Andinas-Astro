@@ -11,7 +11,7 @@ const azuracastPlayerCustomCss = [
   ".radio-player-widget .radio-control-play-button svg{color:#fff!important;fill:currentColor!important}",
 ].join("");
 
-const azuracastPlayerEmbedSrc = `https://radio.estampasandinas.com/public/estampas_andinas/embed?theme=light&primary_color=143231&text_color=FFFFFF&autoplay=1&continuous=1&custom_css=${encodeURIComponent(Buffer.from(azuracastPlayerCustomCss, "utf8").toString("base64"))}`;
+const azuracastPlayerEmbedSrc = `https://radio.estampasandinas.com/public/estampas_andinas/embed?theme=light&primary_color=143231&text_color=FFFFFF&continuous=1&custom_css=${encodeURIComponent(Buffer.from(azuracastPlayerCustomCss, "utf8").toString("base64"))}`;
 ---
 
 <Layout title="Estampas Andinas por Orestes Damián">
