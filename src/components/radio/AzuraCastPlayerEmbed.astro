@@ -1,0 +1,15 @@
+---
+const customCss = [
+  ".radio-player-widget .time-display .text-secondary{color:#fff!important}",
+  ".radio-player-widget .radio-control-play-button{color:#fff!important}",
+  ".radio-player-widget .radio-control-play-button svg{color:#fff!important;fill:currentColor!important}",
+].join("");
+
+const src = `https://radio.estampasandinas.com/public/estampas_andinas/embed?theme=light&primary_color=143231&text_color=FFFFFF&continuous=1&custom_css=${encodeURIComponent(btoa(customCss))}`;
+---
+
+<iframe
+  src={src}
+  allowtransparency="true"
+  style="width: 100%; min-height: 150px; height: 150px; border: 0; color-scheme: light;"
+></iframe>

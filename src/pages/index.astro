@@ -4,14 +4,11 @@ import { Image } from "astro:assets";
 import bgImage from "../../public/Assets/bg.webp";
 import estampaMobile from "../../public/Assets/estampa-mobile.webp";
 import estampaDesktop from "../../public/Assets/estampa-desktop.webp";
-
-const azuracastPlayerCustomCss = [
-  ".radio-player-widget .time-display .text-secondary{color:#fff!important}",
-  ".radio-player-widget .radio-control-play-button{color:#fff!important}",
-  ".radio-player-widget .radio-control-play-button svg{color:#fff!important;fill:currentColor!important}",
-].join("");
-
-const azuracastPlayerEmbedSrc = `https://radio.estampasandinas.com/public/estampas_andinas/embed?theme=light&primary_color=143231&text_color=FFFFFF&continuous=1&custom_css=${encodeURIComponent(btoa(azuracastPlayerCustomCss))}`;
+import { RADIO_PROVIDER, RADIO_PUBLIC_PAGE_URL } from "../components/radio/config";
+import RadiolizePlayerEmbed from "../components/radio/RadiolizePlayerEmbed.astro";
+import RadiolizeHistoryEmbed from "../components/radio/RadiolizeHistoryEmbed.astro";
+import AzuraCastPlayerEmbed from "../components/radio/AzuraCastPlayerEmbed.astro";
+import AzuraCastHistoryEmbed from "../components/radio/AzuraCastHistoryEmbed.astro";
 ---
 
 <Layout title="Estampas Andinas por Orestes Damián">
@@ -46,7 +43,7 @@ const azuracastPlayerEmbedSrc = `https://radio.estampasandinas.com/public/estamp
                   >
                     <a
                       class="underline"
-                      href="https://radio.estampasandinas.com/public/estampas_andinas"
+                      href={RADIO_PUBLIC_PAGE_URL}
                       target="_blank"
                       >Si el reproductor no se visualiza, click en el link</a
                     >
@@ -81,20 +78,24 @@ const azuracastPlayerEmbedSrc = `https://radio.estampasandinas.com/public/estamp
           <div
             class="rounded-t-2xl px-4 pt-4 border border-gray-500 backdrop-blur-2xl backdrop-brightness-80"
           >
-            <iframe
-              src={azuracastPlayerEmbedSrc}
-              allowtransparency="true"
-              style="width: 100%; min-height: 150px; height: 150px; border: 0; color-scheme: light;"
-            ></iframe>
+            {
+              RADIO_PROVIDER === "radiolize" ? (
+                <RadiolizePlayerEmbed />
+              ) : (
+                <AzuraCastPlayerEmbed />
+              )
+            }
           </div>
           <div
             class="bg-gray-100 mb-8 rounded-b-2xl border-t-0 border-gray-500 border overflow-hidden w-full"
           >
-            <iframe
-              src="https://radio.estampasandinas.com/public/estampas_andinas/history?theme=light"
-              allowtransparency="true"
-              style="width: 100%; min-height: 300px; height: 300px; border: 0; color-scheme: light;"
-            ></iframe>
+            {
+              RADIO_PROVIDER === "radiolize" ? (
+                <RadiolizeHistoryEmbed />
+              ) : (
+                <AzuraCastHistoryEmbed />
+              )
+            }
           </div>
         </div>
       </div>
@@ -122,7 +123,7 @@ const azuracastPlayerEmbedSrc = `https://radio.estampasandinas.com/public/estamp
       >
         <a
           class="underline"
-          href="https://radio.estampasandinas.com/public/estampas_andinas"
+          href={RADIO_PUBLIC_PAGE_URL}
           target="_blank">Si el reproductor no se visualiza, click en el link</a
         >
       </p>
