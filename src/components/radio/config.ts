@@ -1,7 +1,7 @@
 export type RadioProvider = "radiolize" | "azuracast";
 
 /** Switch embed stack: `radiolize` | `azuracast` */
-export const RADIO_PROVIDER: RadioProvider = "azuracast";
+export const RADIO_PROVIDER = "azuracast" as RadioProvider;
 
 export const RADIO_PUBLIC_PAGE_URL =
   RADIO_PROVIDER === "radiolize"
