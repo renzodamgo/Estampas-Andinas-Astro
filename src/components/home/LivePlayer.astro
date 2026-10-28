@@ -160,6 +160,12 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
       document.querySelectorAll<HTMLButtonElement>("[data-hero-toggle]"),
     );
     const historyList = document.querySelector<HTMLElement>("[data-history]");
+    const moreBtn = document.querySelector<HTMLButtonElement>(
+      "[data-history-more]",
+    );
+    const VISIBLE_SONGS = 5;
+    let historyExpanded = false;
+    let lastHistory: HistoryItem[] = [];
 
     let online = true;
     let playing = false;
@@ -329,7 +335,28 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     }
 
     // ---------- now playing ----------
+    const dateFmt = new Intl.DateTimeFormat("es-PE", {
+      day: "numeric",
+      month: "short",
+      timeZone: "America/Lima",
+    });
+    const timeFmt = new Intl.DateTimeFormat("es-PE", {
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: "America/Lima",
+    });
+    function ago(playedAt: number) {
+      const mins = Math.round((Date.now() / 1000 - playedAt) / 60);
+      if (mins < 1) return "ahora";
+      if (mins < 60) return `hace ${mins} min`;
+      const hours = Math.round(mins / 60);
+      if (hours < 24) return `hace ${hours} h`;
+      const d = new Date(playedAt * 1000);
+      return `${dateFmt.format(d)}, ${timeFmt.format(d)}`;
+    }
+
     function renderHistory(items: HistoryItem[]) {
+      lastHistory = items;
       if (!historyList) return;
       historyList.replaceChildren();
       if (!items.length) {
@@ -337,11 +364,13 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
         li.className = "ea-empty";
         li.textContent = "Todavía no hay canciones en el historial.";
         historyList.append(li);
+        if (moreBtn) moreBtn.hidden = true;
         return;
       }
-      items.forEach((item) => {
+      items.forEach((item, index) => {
         const li = document.createElement("li");
         li.className = "ea-row";
+        li.hidden = !historyExpanded && index >= VISIBLE_SONGS;
 
         const thumb = document.createElement("div");
         thumb.className = "ea-thumb";
@@ -367,16 +396,26 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
 
         const time = document.createElement("div");
         time.className = "ea-row-time";
-        const mins = Math.max(
-          0,
-          Math.round((Date.now() / 1000 - item.played_at) / 60),
-        );
-        time.textContent = mins < 1 ? "ahora" : `hace ${mins} min`;
+        time.textContent = ago(item.played_at);
 
         li.append(thumb, text, time);
         historyList.append(li);
       });
+
+      if (moreBtn) {
+        const extra = items.length - VISIBLE_SONGS;
+        moreBtn.hidden = extra <= 0;
+        moreBtn.textContent = historyExpanded
+          ? "Ver menos"
+          : `Ver ${extra} canciones anteriores`;
+        moreBtn.setAttribute("aria-expanded", String(historyExpanded));
+      }
     }
+
+    moreBtn?.addEventListener("click", () => {
+      historyExpanded = !historyExpanded;
+      renderHistory(lastHistory);
+    });
 
     async function refresh() {
       try {
@@ -412,7 +451,7 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
         desktop.textContent = text ? ` · ${text}` : "";
 
         renderHistory(
-          (data.song_history as HistoryItem[] | undefined)?.slice(0, 5) ?? [],
+          (data.song_history as HistoryItem[] | undefined)?.slice(0, 30) ?? [],
         );
       } catch {
         // Keep the last known state; the next poll will retry.

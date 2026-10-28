@@ -49,6 +49,10 @@ html {
   position: relative;
   z-index: 1;
 }
+/* The first screen holds the WhatsApp button, keep it above the sections below. */
+.ea-page > .ea-first {
+  z-index: 5;
+}
 
 .ea-page a {
   color: var(--ea-green);
@@ -489,6 +493,29 @@ html {
   color: var(--ea-dim);
   white-space: nowrap;
 }
+.ea-row[hidden] {
+  display: none;
+}
+.ea-more {
+  align-self: flex-start;
+  min-height: 48px;
+  margin-top: 6px;
+  padding: 4px 22px 0;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  background: rgba(17, 21, 27, 0.35);
+  color: var(--ea-text);
+  font: 600 18px var(--ea-sans);
+  cursor: pointer;
+  text-shadow: none;
+}
+.ea-more:hover {
+  border-color: var(--ea-green);
+  color: var(--ea-green-hover);
+}
+.ea-more[hidden] {
+  display: none;
+}
 .ea-empty {
   padding: 12px;
   color: var(--ea-dim);
@@ -592,17 +619,10 @@ html {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 .ea-fab .ea-fab-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: var(--ea-green);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
-}
-.ea-page a.ea-fab:hover .ea-fab-icon {
-  background: var(--ea-green-hover);
+  width: 68px;
+  height: 68px;
+  display: block;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.4));
 }
 
 /* ---------- Mobile: photo on top, controls pinned at the bottom of the first screen ---------- */
@@ -767,8 +787,7 @@ html {
     display: none;
   }
   .ea-fab .ea-fab-icon {
-    width: 58px;
-    height: 58px;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    width: 64px;
+    height: 64px;
   }
 }
