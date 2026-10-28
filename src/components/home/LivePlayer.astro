@@ -1,0 +1,432 @@
+---
+import fallbackArt from "../../../public/Assets/estampa-mobile.webp";
+import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
+---
+
+<div
+  class="ea-player ea-glass"
+  data-live-player
+  data-now-playing-url={NOW_PLAYING_URL}
+  data-stream-url={STREAM_URL}
+>
+  <div class="ea-track">
+    <div class="ea-art">
+      <img
+        data-art
+        class="ea-art-fallback"
+        src={fallbackArt.src}
+        alt=""
+        width="88"
+        height="88"
+      />
+    </div>
+    <div class="ea-track-info">
+      <div class="ea-status-row">
+        <span class="ea-status" data-status>AL AIRE</span>
+        <div class="ea-eq" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="ea-title" data-title>Estampas Andinas</div>
+      <div class="ea-sub">
+        <span data-artist>Música andina, huaynos tarmeños y más</span>
+        <span class="ea-listeners-desktop" data-listeners-desktop></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ea-progress-wrap">
+    <div class="ea-bar" aria-hidden="true"><div data-progress></div></div>
+    <div class="ea-times">
+      <span data-elapsed>0:00</span>
+      <span class="ea-listeners-mobile" data-listeners-mobile></span>
+      <span data-duration>0:00</span>
+    </div>
+  </div>
+
+  <div class="ea-controls">
+    <span class="ea-spacer"></span>
+    <button
+      type="button"
+      class="ea-play"
+      data-toggle
+      aria-label="Reproducir"
+    >
+      <svg
+        class="ea-icon-play"
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M8 5 L19 12 L8 19 Z" fill="currentColor"></path>
+      </svg>
+      <svg
+        class="ea-icon-pause"
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"
+        ></rect>
+        <rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"
+        ></rect>
+      </svg>
+    </button>
+    <button
+      type="button"
+      class="ea-share"
+      data-share
+      aria-label="Compartir la radio"
+    >
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 3v12"></path>
+        <path d="M7 8l5-5 5 5"></path>
+        <path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"></path>
+      </svg>
+    </button>
+    <label class="ea-vol" for="ea-volume">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M4 9h4l5-4v14l-5-4H4z"></path>
+        <path d="M16.5 8.5a5 5 0 0 1 0 7"></path>
+      </svg>
+      <span class="ea-sr">Volumen</span>
+      <input id="ea-volume" type="range" min="0" max="100" value="80" data-volume />
+    </label>
+  </div>
+  <div class="ea-msg" role="status" aria-live="polite" data-message></div>
+</div>
+
+<script>
+  type Song = {
+    title?: string;
+    artist?: string;
+    text?: string;
+    art?: string;
+  };
+  type HistoryItem = { played_at: number; song: Song };
+
+  const FALLBACK_ART = document
+    .querySelector<HTMLImageElement>("[data-art]")!
+    .getAttribute("src")!;
+
+  const root = document.querySelector<HTMLElement>("[data-live-player]");
+  if (root) init(root);
+
+  function init(root: HTMLElement) {
+    const nowPlayingUrl = root.dataset.nowPlayingUrl!;
+    const streamUrl = root.dataset.streamUrl!;
+    const $ = <T extends HTMLElement>(sel: string) =>
+      root.querySelector<T>(`[${sel}]`)!;
+    const page = document.querySelector<HTMLElement>(".ea-page") ?? root;
+
+    const artEl = $<HTMLImageElement>("data-art");
+    const titleEl = $("data-title");
+    const artistEl = $("data-artist");
+    const statusEl = $("data-status");
+    const progressEl = $("data-progress");
+    const elapsedEl = $("data-elapsed");
+    const durationEl = $("data-duration");
+    const volumeEl = $<HTMLInputElement>("data-volume");
+    const toggleEl = $<HTMLButtonElement>("data-toggle");
+    const shareEl = $<HTMLButtonElement>("data-share");
+    const messageEl = $("data-message");
+    const listenersEls = [
+      $("data-listeners-desktop"),
+      $("data-listeners-mobile"),
+    ];
+    const heroButtons = Array.from(
+      document.querySelectorAll<HTMLButtonElement>("[data-hero-toggle]"),
+    );
+    const historyList = document.querySelector<HTMLElement>("[data-history]");
+
+    let online = true;
+    let playing = false;
+    let loading = false;
+    let duration = 0;
+    let baseElapsed = 0;
+    let fetchedAt = Date.now();
+    let currentId: string | number | null = null;
+    let currentArt: string | null = null;
+
+    const audio = new Audio();
+    audio.preload = "none";
+
+    // ---------- helpers ----------
+    const fmt = (s: number) => {
+      s = Math.max(0, Math.floor(s));
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    };
+
+    const artCache = new Map<string, Promise<string | null>>();
+    // AzuraCast answers with its own generic cover when a song has no art.
+    // Resolve it once and fall back to our logo in that case.
+    function resolveArt(url?: string): Promise<string | null> {
+      if (!url) return Promise.resolve(null);
+      let hit = artCache.get(url);
+      if (!hit) {
+        hit = fetch(url)
+          .then(async (res) => {
+            if (!res.ok || res.url.includes("generic_song")) return null;
+            return URL.createObjectURL(await res.blob());
+          })
+          .catch(() => null);
+        artCache.set(url, hit);
+      }
+      return hit;
+    }
+
+    function setArt(img: HTMLImageElement, resolved: string | null) {
+      if (resolved) {
+        img.src = resolved;
+        img.classList.remove("ea-art-fallback");
+      } else {
+        img.src = FALLBACK_ART;
+        img.classList.add("ea-art-fallback");
+      }
+    }
+
+    function renderState() {
+      page.classList.toggle("is-playing", playing);
+      const label = loading
+        ? "Conectando…"
+        : playing
+          ? "Pausar"
+          : "Escuchar en vivo";
+      heroButtons.forEach((b) => (b.textContent = label));
+      toggleEl.setAttribute("aria-label", playing ? "Pausar" : "Reproducir");
+      toggleEl.setAttribute("aria-busy", String(loading));
+      statusEl.textContent = !online
+        ? "FUERA DE LÍNEA"
+        : playing
+          ? "SONANDO"
+          : "AL AIRE";
+      statusEl.classList.toggle("is-offline", !online);
+      document
+        .querySelectorAll<HTMLElement>("[data-status-mirror]")
+        .forEach((el) => (el.textContent = online ? "AL AIRE" : "OFF"));
+    }
+
+    function renderProgress() {
+      const elapsed = Math.min(
+        duration || Infinity,
+        baseElapsed + (Date.now() - fetchedAt) / 1000,
+      );
+      elapsedEl.textContent = fmt(elapsed);
+      durationEl.textContent = duration ? fmt(duration) : "";
+      progressEl.style.width = duration
+        ? `${Math.min(100, (elapsed / duration) * 100)}%`
+        : "0%";
+    }
+
+    // ---------- playback ----------
+    async function play() {
+      messageEl.textContent = "";
+      loading = true;
+      renderState();
+      // Reload so we join the live edge instead of resuming a stale buffer.
+      audio.src = `${streamUrl}?t=${Date.now()}`;
+      try {
+        await audio.play();
+      } catch {
+        loading = false;
+        playing = false;
+        messageEl.textContent =
+          "No se pudo reproducir. Intenta de nuevo en unos segundos.";
+        renderState();
+      }
+    }
+
+    function stop() {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+      playing = false;
+      loading = false;
+      renderState();
+    }
+
+    const toggle = () => (playing || loading ? stop() : play());
+
+    audio.addEventListener("playing", () => {
+      loading = false;
+      playing = true;
+      renderState();
+    });
+    audio.addEventListener("error", () => {
+      if (!audio.getAttribute("src")) return;
+      stop();
+      messageEl.textContent =
+        "Se cortó la transmisión. Presiona reproducir para reconectar.";
+    });
+
+    toggleEl.addEventListener("click", toggle);
+    heroButtons.forEach((b) => b.addEventListener("click", toggle));
+
+    // ---------- volume ----------
+    const savedVolume = Number(localStorage.getItem("ea-volume"));
+    if (!Number.isNaN(savedVolume) && localStorage.getItem("ea-volume")) {
+      volumeEl.value = String(savedVolume);
+    }
+    audio.volume = Number(volumeEl.value) / 100;
+    volumeEl.addEventListener("input", () => {
+      audio.volume = Number(volumeEl.value) / 100;
+      localStorage.setItem("ea-volume", volumeEl.value);
+    });
+
+    // ---------- share ----------
+    shareEl.addEventListener("click", async () => {
+      const data = {
+        title: "Estampas Andinas",
+        text: "Música andina, huaynos tarmeños y más.",
+        url: location.origin,
+      };
+      try {
+        if (navigator.share) await navigator.share(data);
+        else {
+          await navigator.clipboard.writeText(data.url);
+          messageEl.textContent = "Enlace copiado.";
+        }
+      } catch {
+        /* user cancelled */
+      }
+    });
+
+    // ---------- Media Session (lock screen controls) ----------
+    function updateMediaSession(title: string, artist: string) {
+      if (!("mediaSession" in navigator)) return;
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title,
+        artist: artist || "Estampas Andinas",
+        album: "Estampas Andinas",
+        artwork: currentArt
+          ? [{ src: currentArt, sizes: "512x512" }]
+          : [{ src: FALLBACK_ART, sizes: "512x512", type: "image/webp" }],
+      });
+      navigator.mediaSession.setActionHandler("play", () => void play());
+      navigator.mediaSession.setActionHandler("pause", () => stop());
+    }
+
+    // ---------- now playing ----------
+    function renderHistory(items: HistoryItem[]) {
+      if (!historyList) return;
+      historyList.replaceChildren();
+      if (!items.length) {
+        const li = document.createElement("li");
+        li.className = "ea-empty";
+        li.textContent = "Todavía no hay canciones en el historial.";
+        historyList.append(li);
+        return;
+      }
+      items.forEach((item) => {
+        const li = document.createElement("li");
+        li.className = "ea-row";
+
+        const thumb = document.createElement("div");
+        thumb.className = "ea-thumb";
+        const img = document.createElement("img");
+        img.alt = "";
+        img.loading = "lazy";
+        setArt(img, null);
+        thumb.append(img);
+        void resolveArt(item.song.art).then((r) => r && setArt(img, r));
+
+        const text = document.createElement("div");
+        text.className = "ea-row-text";
+        const title = document.createElement("div");
+        title.className = "ea-row-title";
+        title.textContent = item.song.title || item.song.text || "—";
+        text.append(title);
+        if (item.song.artist) {
+          const artist = document.createElement("div");
+          artist.className = "ea-row-artist";
+          artist.textContent = item.song.artist;
+          text.append(artist);
+        }
+
+        const time = document.createElement("div");
+        time.className = "ea-row-time";
+        const mins = Math.max(
+          0,
+          Math.round((Date.now() / 1000 - item.played_at) / 60),
+        );
+        time.textContent = mins < 1 ? "ahora" : `hace ${mins} min`;
+
+        li.append(thumb, text, time);
+        historyList.append(li);
+      });
+    }
+
+    async function refresh() {
+      try {
+        const res = await fetch(nowPlayingUrl, { cache: "no-store" });
+        if (!res.ok) throw new Error(String(res.status));
+        const data = await res.json();
+        online = Boolean(data.is_online);
+
+        const np = data.now_playing ?? {};
+        const song: Song = np.song ?? {};
+        const title = song.title || song.text || "Estampas Andinas";
+        const artist = song.artist || "";
+        duration = Number(np.duration) || 0;
+        baseElapsed = Number(np.elapsed) || 0;
+        fetchedAt = Date.now();
+
+        if (np.sh_id !== currentId) {
+          currentId = np.sh_id;
+          titleEl.textContent = title;
+          artistEl.textContent = artist || "Estampas Andinas";
+          const resolved = await resolveArt(song.art);
+          currentArt = resolved;
+          setArt(artEl, resolved);
+          updateMediaSession(title, artist);
+        }
+
+        const n = Number(data.listeners?.current) || 0;
+        const text = n > 0 ? `${n} escuchando` : "";
+        listenersEls.forEach((el) => {
+          el.textContent = text;
+        });
+        const desktop = listenersEls[0];
+        desktop.textContent = text ? ` · ${text}` : "";
+
+        renderHistory(
+          (data.song_history as HistoryItem[] | undefined)?.slice(0, 5) ?? [],
+        );
+      } catch {
+        // Keep the last known state; the next poll will retry.
+      }
+      renderState();
+      renderProgress();
+    }
+
+    renderState();
+    void refresh();
+    setInterval(refresh, 10_000);
+    setInterval(renderProgress, 1000);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) void refresh();
+    });
+  }
+</script>
