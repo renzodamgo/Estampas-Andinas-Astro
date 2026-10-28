@@ -791,3 +791,144 @@ html {
     height: 64px;
   }
 }
+
+/* ---------- Past shows (podcast episodes) ---------- */
+.ea-shows {
+  padding-top: 24px;
+  padding-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ea-shows[hidden] {
+  display: none;
+}
+.ea-shows-sub {
+  margin: -6px 0 4px;
+  font-size: 19px;
+  color: var(--ea-muted);
+}
+.ea-episodes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ea-ep {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 14px;
+}
+.ea-ep[hidden] {
+  display: none;
+}
+.ea-ep:hover,
+.ea-ep.is-active {
+  background: #1b2129;
+}
+.ea-ep-btn {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ea-green);
+  color: var(--ea-bg);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  text-shadow: none;
+}
+.ea-ep-btn:hover {
+  background: var(--ea-green-hover);
+}
+.ea-ep-btn svg {
+  grid-area: 1 / 1;
+}
+.ea-ep-btn .ea-icon-pause {
+  display: none;
+}
+.ea-ep.is-playing .ea-ep-btn .ea-icon-pause {
+  display: block;
+}
+.ea-ep.is-playing .ea-ep-btn .ea-icon-play {
+  display: none;
+}
+.ea-ep .ea-thumb {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 10px;
+  background: var(--ea-panel);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.ea-ep .ea-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ea-ep .ea-thumb img.ea-art-fallback {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+}
+.ea-ep-text {
+  flex: 1;
+  min-width: 0;
+}
+.ea-ep-desc {
+  margin-top: 2px;
+  font-size: 16px;
+  color: var(--ea-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ea-ep-seek {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  font-size: 15px;
+  color: var(--ea-muted);
+  font-variant-numeric: tabular-nums;
+}
+.ea-ep.is-active .ea-ep-seek {
+  display: flex;
+}
+.ea-ep-seek input {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--ea-green);
+}
+.ea-ep-seek span {
+  white-space: nowrap;
+}
+@media (max-width: 767px) {
+  .ea-ep {
+    gap: 12px;
+    padding: 10px 4px;
+  }
+  .ea-ep .ea-thumb {
+    display: none;
+  }
+  .ea-shows-sub {
+    font-size: 18px;
+  }
+}
+.ea-ep .ea-row-title {
+  font-weight: 700;
+  font-size: 19px;
+  overflow-wrap: anywhere;
+}
+.ea-ep .ea-row-artist {
+  font-size: 17px;
+  color: var(--ea-dim);
+}

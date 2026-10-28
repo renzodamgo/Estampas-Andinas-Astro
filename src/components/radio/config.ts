@@ -15,3 +15,6 @@ export const NOW_PLAYING_URL = `${AZURACAST_BASE_URL}/api/nowplaying/${AZURACAST
 export const STREAM_URL = `${AZURACAST_BASE_URL}/listen/${AZURACAST_STATION}/radio.mp3`;
 export const WHATSAPP_URL =
   "https://wa.me/51964624589?text=Hola%2C%20quisiera%20mandar%20un%20mensaje";
+
+/** Public podcast list (recorded shows). Empty when there are no published podcasts. */
+export const PODCASTS_URL = `${AZURACAST_BASE_URL}/api/station/${AZURACAST_STATION}/public/podcasts`;

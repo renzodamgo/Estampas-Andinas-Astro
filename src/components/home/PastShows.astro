@@ -1,0 +1,262 @@
+---
+import fallbackArt from "../../../public/Assets/estampa-mobile.webp";
+import { PODCASTS_URL } from "../radio/config";
+---
+
+<section
+  id="programas"
+  class="ea-wrap ea-shows"
+  data-shows
+  data-podcasts-url={PODCASTS_URL}
+  data-fallback-art={fallbackArt.src}
+  hidden
+>
+  <h2 class="ea-h2">Programas anteriores</h2>
+  <p class="ea-shows-sub">Escucha los programas grabados cuando quieras.</p>
+  <ol class="ea-episodes" data-episodes></ol>
+  <button type="button" class="ea-more" data-episodes-more hidden>
+    Ver más programas
+  </button>
+</section>
+
+<script>
+  type Podcast = {
+    title: string;
+    links: { episodes: string };
+    is_published?: boolean;
+  };
+  type Episode = {
+    id: string;
+    title: string;
+    description_short?: string;
+    publish_at: number;
+    is_published?: boolean;
+    has_media?: boolean;
+    media?: { length_text?: string; length?: number } | null;
+    art?: string;
+    has_custom_art?: boolean;
+    links: { download: string };
+  };
+
+  const root = document.querySelector<HTMLElement>("[data-shows]");
+  if (root) void init(root);
+
+  async function init(root: HTMLElement) {
+    const list = root.querySelector<HTMLElement>("[data-episodes]")!;
+    const moreBtn = root.querySelector<HTMLButtonElement>(
+      "[data-episodes-more]",
+    )!;
+    const fallbackArt = root.dataset.fallbackArt!;
+    const VISIBLE = 6;
+    let expanded = false;
+
+    const dateFmt = new Intl.DateTimeFormat("es-PE", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      timeZone: "America/Lima",
+    });
+    const fmt = (s: number) => {
+      s = Math.max(0, Math.floor(s));
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = String(s % 60).padStart(2, "0");
+      return h ? `${h}:${String(m).padStart(2, "0")}:${sec}` : `${m}:${sec}`;
+    };
+
+    // ---------- load ----------
+    let episodes: Episode[] = [];
+    try {
+      const res = await fetch(root.dataset.podcastsUrl!);
+      if (!res.ok) return;
+      const podcasts = ((await res.json()) as Podcast[]).filter(
+        (p) => p.is_published !== false,
+      );
+      const lists = await Promise.all(
+        podcasts.map((p) =>
+          fetch(p.links.episodes)
+            .then((r) => (r.ok ? (r.json() as Promise<Episode[]>) : []))
+            .catch(() => [] as Episode[]),
+        ),
+      );
+      episodes = lists
+        .flat()
+        .filter((e) => e.is_published !== false && e.has_media !== false)
+        .sort((a, b) => b.publish_at - a.publish_at);
+    } catch {
+      return; // Keep the section hidden if the server is unreachable.
+    }
+    if (!episodes.length) return;
+
+    root.hidden = false;
+    document
+      .querySelectorAll<HTMLElement>("[data-nav-shows]")
+      .forEach((el) => (el.hidden = false));
+
+    // ---------- playback ----------
+    const audio = new Audio();
+    audio.preload = "none";
+    let active: { ep: Episode; li: HTMLElement } | null = null;
+
+    function setPlayingUi(li: HTMLElement, playing: boolean) {
+      li.classList.toggle("is-playing", playing);
+      const btn = li.querySelector<HTMLButtonElement>("[data-episode-play]")!;
+      btn.setAttribute("aria-label", playing ? "Pausar" : "Reproducir");
+    }
+
+    function clearActive() {
+      if (!active) return;
+      active.li.classList.remove("is-active", "is-playing");
+      const seek = active.li.querySelector<HTMLInputElement>("[data-seek]")!;
+      seek.value = "0";
+      active.li.querySelector<HTMLElement>("[data-ep-time]")!.textContent = "";
+      active = null;
+    }
+
+    async function toggleEpisode(ep: Episode, li: HTMLElement) {
+      if (active?.ep.id === ep.id) {
+        if (audio.paused) await audio.play().catch(() => {});
+        else audio.pause();
+        return;
+      }
+      clearActive();
+      active = { ep, li };
+      li.classList.add("is-active");
+      audio.src = ep.links.download;
+      // Tell the live player to stop so both don't play at once.
+      window.dispatchEvent(new CustomEvent("ea:episode-playing"));
+      try {
+        await audio.play();
+      } catch {
+        clearActive();
+        return;
+      }
+      if ("mediaSession" in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: ep.title,
+          artist: "Estampas Andinas",
+          album: "Programas anteriores",
+        });
+        navigator.mediaSession.setActionHandler("play", () => void audio.play());
+        navigator.mediaSession.setActionHandler("pause", () => audio.pause());
+      }
+    }
+
+    audio.addEventListener("playing", () => {
+      if (active) setPlayingUi(active.li, true);
+    });
+    audio.addEventListener("pause", () => {
+      if (active) setPlayingUi(active.li, false);
+    });
+    audio.addEventListener("ended", () => clearActive());
+    audio.addEventListener("error", () => {
+      if (audio.getAttribute("src")) clearActive();
+    });
+    audio.addEventListener("timeupdate", () => {
+      if (!active) return;
+      const total = audio.duration || active.ep.media?.length || 0;
+      const seek = active.li.querySelector<HTMLInputElement>("[data-seek]")!;
+      if (total) seek.value = String((audio.currentTime / total) * 1000);
+      active.li.querySelector<HTMLElement>("[data-ep-time]")!.textContent =
+        `${fmt(audio.currentTime)} / ${total ? fmt(total) : "--:--"}`;
+    });
+    window.addEventListener("ea:live-playing", () => audio.pause());
+
+    // ---------- render ----------
+    function render() {
+      list.replaceChildren();
+      episodes.forEach((ep, index) => {
+        const li = document.createElement("li");
+        li.className = "ea-ep";
+        li.hidden = !expanded && index >= VISIBLE;
+
+        const play = document.createElement("button");
+        play.type = "button";
+        play.className = "ea-ep-btn";
+        play.dataset.episodePlay = "";
+        play.setAttribute("aria-label", "Reproducir");
+        play.innerHTML =
+          '<svg class="ea-icon-play" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z" fill="currentColor"></path></svg>' +
+          '<svg class="ea-icon-pause" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"></rect><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"></rect></svg>';
+        play.addEventListener("click", () => void toggleEpisode(ep, li));
+
+        const thumb = document.createElement("div");
+        thumb.className = "ea-thumb";
+        const img = document.createElement("img");
+        img.alt = "";
+        img.loading = "lazy";
+        if (ep.has_custom_art && ep.art) img.src = ep.art;
+        else {
+          img.src = fallbackArt;
+          img.className = "ea-art-fallback";
+        }
+        thumb.append(img);
+
+        const text = document.createElement("div");
+        text.className = "ea-ep-text";
+        const title = document.createElement("div");
+        title.className = "ea-row-title";
+        title.textContent = ep.title;
+        const meta = document.createElement("div");
+        meta.className = "ea-row-artist";
+        meta.textContent = [
+          dateFmt.format(new Date(ep.publish_at * 1000)),
+          ep.media?.length_text,
+        ]
+          .filter(Boolean)
+          .join(" · ");
+        text.append(title, meta);
+        if (ep.description_short) {
+          const desc = document.createElement("div");
+          desc.className = "ea-ep-desc";
+          desc.textContent = ep.description_short;
+          text.append(desc);
+        }
+
+        const seekWrap = document.createElement("div");
+        seekWrap.className = "ea-ep-seek";
+        const seek = document.createElement("input");
+        seek.type = "range";
+        seek.min = "0";
+        seek.max = "1000";
+        seek.value = "0";
+        seek.setAttribute("aria-label", "Posición del programa");
+        seek.dataset.seek = "";
+        seek.addEventListener("input", () => {
+          const total = audio.duration || ep.media?.length || 0;
+          if (active?.ep.id === ep.id && total)
+            audio.currentTime = (Number(seek.value) / 1000) * total;
+        });
+        const time = document.createElement("span");
+        time.dataset.epTime = "";
+        seekWrap.append(seek, time);
+        text.append(seekWrap);
+
+        li.append(play, thumb, text);
+        list.append(li);
+      });
+
+      const extra = episodes.length - VISIBLE;
+      moreBtn.hidden = extra <= 0;
+      moreBtn.textContent = expanded ? "Ver menos" : `Ver ${extra} programas más`;
+      moreBtn.setAttribute("aria-expanded", String(expanded));
+      if (active) {
+        // Re-mark the row of the episode that is still playing.
+        const row = Array.from(list.children).find(
+          (_, i) => episodes[i].id === active!.ep.id,
+        ) as HTMLElement | undefined;
+        if (row) {
+          active.li = row;
+          row.classList.add("is-active");
+          setPlayingUi(row, !audio.paused);
+        }
+      }
+    }
+
+    moreBtn.addEventListener("click", () => {
+      expanded = !expanded;
+      render();
+    });
+    render();
+  }
+</script>
