@@ -283,7 +283,9 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     let userStopped = false;
     function onFirstGesture(e: Event) {
       const target = e.target as Element | null;
-      if (target?.closest("[data-toggle], [data-hero-toggle], [data-share]")) {
+      if (target?.closest(
+          "[data-toggle], [data-hero-toggle], [data-share], [data-episode-play]",
+        )) {
         disarmFirstGesture();
         return;
       }
@@ -312,6 +314,14 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
       loading = false;
       playing = true;
       renderState();
+      window.dispatchEvent(new CustomEvent("ea:live-playing"));
+    });
+    window.addEventListener("ea:episode-playing", () => {
+      if (playing || loading) stop();
+      else {
+        userStopped = true;
+        disarmFirstGesture();
+      }
     });
     audio.addEventListener("error", () => {
       if (!audio.getAttribute("src")) return;

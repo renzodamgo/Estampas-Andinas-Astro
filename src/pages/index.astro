@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import LivePlayer from "../components/home/LivePlayer.astro";
+import PastShows from "../components/home/PastShows.astro";
 import { RADIO_PUBLIC_PAGE_URL, WHATSAPP_URL } from "../components/radio/config";
 import "../styles/home.css";
 ---
@@ -12,6 +13,7 @@ import "../styles/home.css";
         <a href="#top" class="ea-logo">Estampas Andinas</a>
         <nav class="ea-nav" aria-label="Principal">
           <a href="#escuchar">Escuchar</a>
+          <a href="#programas" data-nav-shows hidden>Programas</a>
           <a href="#programacion">Programación</a>
           <a href={WHATSAPP_URL} class="ea-pill" target="_blank" rel="noopener"
             >Envía tu saludo</a
@@ -60,6 +62,8 @@ import "../styles/home.css";
         />
       </a>
     </div>
+
+    <PastShows />
 
     <section class="ea-wrap ea-lower">
       <div class="ea-col">
