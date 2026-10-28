@@ -247,7 +247,7 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     }
 
     // ---------- playback ----------
-    async function play() {
+    async function play(auto = false) {
       messageEl.textContent = "";
       loading = true;
       renderState();
@@ -258,13 +258,18 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
       } catch {
         loading = false;
         playing = false;
-        messageEl.textContent =
-          "No se pudo reproducir. Intenta de nuevo en unos segundos.";
+        audio.removeAttribute("src");
+        messageEl.textContent = auto
+          ? "Toca la pantalla para empezar a escuchar."
+          : "No se pudo reproducir. Intenta de nuevo en unos segundos.";
         renderState();
+        if (auto) armFirstGesture();
       }
     }
 
     function stop() {
+      userStopped = true;
+      disarmFirstGesture();
       audio.pause();
       audio.removeAttribute("src");
       audio.load();
@@ -273,7 +278,35 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
       renderState();
     }
 
-    const toggle = () => (playing || loading ? stop() : play());
+    // Browsers block sound until the visitor interacts with the page, so when
+    // autoplay is refused we start on the first tap or key press instead.
+    let userStopped = false;
+    function onFirstGesture(e: Event) {
+      const target = e.target as Element | null;
+      if (target?.closest("[data-toggle], [data-hero-toggle], [data-share]")) {
+        disarmFirstGesture();
+        return;
+      }
+      disarmFirstGesture();
+      if (!userStopped && !playing && !loading) void play();
+    }
+    function armFirstGesture() {
+      document.addEventListener("pointerdown", onFirstGesture, { once: true });
+      document.addEventListener("keydown", onFirstGesture, { once: true });
+    }
+    function disarmFirstGesture() {
+      document.removeEventListener("pointerdown", onFirstGesture);
+      document.removeEventListener("keydown", onFirstGesture);
+    }
+
+    const toggle = () => {
+      disarmFirstGesture();
+      if (playing || loading) stop();
+      else {
+        userStopped = false;
+        void play();
+      }
+    };
 
     audio.addEventListener("playing", () => {
       loading = false;
@@ -462,6 +495,7 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
 
     renderState();
     void refresh();
+    void play(true);
     setInterval(refresh, 10_000);
     setInterval(renderProgress, 1000);
     document.addEventListener("visibilitychange", () => {
