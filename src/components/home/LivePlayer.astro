@@ -32,6 +32,7 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
         <span data-artist>Música andina, huaynos tarmeños y más</span>
         <span class="ea-listeners-desktop" data-listeners-desktop></span>
       </div>
+      <div class="ea-next ea-next-mobile" data-next></div>
     </div>
   </div>
 
@@ -118,6 +119,18 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
   <div class="ea-msg" role="status" aria-live="polite" data-message></div>
 </div>
 
+<div class="ea-mini" data-mini aria-label="Reproductor">
+  <img class="ea-mini-art ea-art-fallback" data-mini-art src={fallbackArt.src} alt="" width="44" height="44" />
+  <button type="button" class="ea-mini-text" data-mini-scroll aria-label="Volver al reproductor">
+    <span class="ea-mini-title" data-mini-title>Estampas Andinas</span>
+    <span class="ea-mini-sub" data-mini-sub>MÚSICA 24 H</span>
+  </button>
+  <button type="button" class="ea-mini-btn" data-mini-toggle aria-label="Reproducir">
+    <svg class="ea-icon-play" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z" fill="currentColor"></path></svg>
+    <svg class="ea-icon-pause" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"></rect><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"></rect></svg>
+  </button>
+</div>
+
 <script>
   type Song = {
     title?: string;
@@ -156,6 +169,11 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
       $("data-listeners-desktop"),
       $("data-listeners-mobile"),
     ];
+    const mini = document.querySelector<HTMLElement>("[data-mini]")!;
+    const miniArt = mini.querySelector<HTMLImageElement>("[data-mini-art]")!;
+    const miniTitle = mini.querySelector<HTMLElement>("[data-mini-title]")!;
+    const miniSub = mini.querySelector<HTMLElement>("[data-mini-sub]")!;
+    const miniToggle = mini.querySelector<HTMLButtonElement>("[data-mini-toggle]")!;
     const heroButtons = Array.from(
       document.querySelectorAll<HTMLButtonElement>("[data-hero-toggle]"),
     );
@@ -168,6 +186,8 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     let lastHistory: HistoryItem[] = [];
 
     let online = true;
+    let isLive = false;
+    let streamer = "";
     let playing = false;
     let loading = false;
     let duration = 0;
@@ -223,15 +243,53 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
       heroButtons.forEach((b) => (b.textContent = label));
       toggleEl.setAttribute("aria-label", playing ? "Pausar" : "Reproducir");
       toggleEl.setAttribute("aria-busy", String(loading));
-      statusEl.textContent = !online
+      const statusLabel = !online
         ? "FUERA DE LÍNEA"
-        : playing
-          ? "SONANDO"
-          : "AL AIRE";
+        : isLive
+          ? "EN VIVO"
+          : "MÚSICA 24 H";
+      statusEl.textContent = statusLabel;
+      miniSub.textContent = statusLabel;
+      miniToggle.setAttribute("aria-label", playing ? "Pausar" : "Reproducir");
       statusEl.classList.toggle("is-offline", !online);
+      statusEl.classList.toggle("is-live", online && isLive);
+      page.classList.toggle("is-live", online && isLive);
       document
         .querySelectorAll<HTMLElement>("[data-status-mirror]")
-        .forEach((el) => (el.textContent = online ? "AL AIRE" : "OFF"));
+        .forEach((el) => (el.textContent = statusLabel));
+      document.querySelectorAll<HTMLElement>("[data-eyebrow]").forEach((el) => {
+        el.textContent =
+          online && isLive
+            ? `En vivo ahora${streamer ? ` con ${streamer}` : ""}`
+            : "Radio por internet";
+      });
+      renderNext();
+    }
+
+    // Next broadcast: Sundays 7:00-9:00 (Peru time, UTC-5, no daylight saving).
+    function renderNext() {
+      let text: string;
+      if (online && isLive) {
+        text = "Estamos en vivo ahora.";
+      } else {
+        const lima = new Date(Date.now() - 5 * 3600 * 1000);
+        const day = lima.getUTCDay();
+        const mins = lima.getUTCHours() * 60 + lima.getUTCMinutes();
+        if (day === 0 && mins >= 7 * 60 && mins < 9 * 60) {
+          text = "El programa de hoy es de 7 a 9 a. m.";
+        } else {
+          let diff = ((7 - day) % 7) * 1440 + 7 * 60 - mins;
+          if (diff <= 0) diff += 7 * 1440;
+          const d = Math.floor(diff / 1440);
+          const h = Math.floor((diff % 1440) / 60);
+          const m = diff % 60;
+          const wait = d > 0 ? `${d} d ${h} h` : h > 0 ? `${h} h ${m} min` : `${m} min`;
+          text = `Próximo programa: domingo 7:00 a. m. · en ${wait}`;
+        }
+      }
+      document
+        .querySelectorAll<HTMLElement>("[data-next]")
+        .forEach((el) => (el.textContent = text));
     }
 
     function renderProgress() {
@@ -284,7 +342,7 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     function onFirstGesture(e: Event) {
       const target = e.target as Element | null;
       if (target?.closest(
-          "[data-toggle], [data-hero-toggle], [data-share], [data-episode-play]",
+          "[data-toggle], [data-hero-toggle], [data-mini-toggle], [data-share], [data-episode-play]",
         )) {
         disarmFirstGesture();
         return;
@@ -331,6 +389,12 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     });
 
     toggleEl.addEventListener("click", toggle);
+    miniToggle.addEventListener("click", toggle);
+    mini
+      .querySelector("[data-mini-scroll]")!
+      .addEventListener("click", () =>
+        window.scrollTo({ top: 0, behavior: "smooth" }),
+      );
     heroButtons.forEach((b) => b.addEventListener("click", toggle));
 
     // ---------- volume ----------
@@ -466,6 +530,8 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
         if (!res.ok) throw new Error(String(res.status));
         const data = await res.json();
         online = Boolean(data.is_online);
+        isLive = Boolean(data.live?.is_live);
+        streamer = String(data.live?.streamer_name ?? "");
 
         const np = data.now_playing ?? {};
         const song: Song = np.song ?? {};
@@ -482,6 +548,8 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
           const resolved = await resolveArt(song.art);
           currentArt = resolved;
           setArt(artEl, resolved);
+          setArt(miniArt, resolved);
+          miniTitle.textContent = title;
           updateMediaSession(title, artist);
         }
 
@@ -503,11 +571,34 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
       renderProgress();
     }
 
+    // Show the compact bar once the main player has scrolled out of view,
+    // unless an episode is playing (the bar only controls the live stream).
+    let playerInView = true;
+    let episodeMode = false;
+    const syncMini = () =>
+      mini.classList.toggle("is-visible", !playerInView && !episodeMode);
+    new IntersectionObserver(
+      ([entry]) => {
+        playerInView = entry.isIntersecting;
+        syncMini();
+      },
+      { threshold: 0.05 },
+    ).observe(root);
+    window.addEventListener("ea:episode-playing", () => {
+      episodeMode = true;
+      syncMini();
+    });
+    window.addEventListener("ea:live-playing", () => {
+      episodeMode = false;
+      syncMini();
+    });
+
     renderState();
     void refresh();
     void play(true);
     setInterval(refresh, 10_000);
     setInterval(renderProgress, 1000);
+    setInterval(renderNext, 30_000);
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) void refresh();
     });
