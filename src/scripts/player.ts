@@ -32,6 +32,7 @@ export type PlayerState = {
   elapsed: number;
   history: HistoryItem[];
   episodes: Episode[];
+  episodesLoaded: boolean;
   episode: Episode | null;
   lowMount: { url: string; bitrate: number } | null;
   saver: boolean;
@@ -83,6 +84,7 @@ const state: PlayerState = {
   elapsed: 0,
   history: [],
   episodes: [],
+  episodesLoaded: false,
   episode: null,
   lowMount: null,
   saver: false,
@@ -372,10 +374,11 @@ async function loadEpisodes() {
       .concat(...lists)
       .filter((e) => e.is_published !== false && e.has_media !== false)
       .sort((a, b) => b.publish_at - a.publish_at);
-    emit();
   } catch {
     /* keep the section hidden */
   }
+  state.episodesLoaded = true;
+  emit();
 }
 
 // ---------- start ----------

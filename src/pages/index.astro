@@ -8,11 +8,8 @@ const site = "https://www.estampasandinas.com";
 const text = encodeURIComponent("Escucha Estampas Andinas");
 const url = encodeURIComponent(site);
 const social = [
-  { label: "Compartir en Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${url}`, bg: "#1877F2", fg: "#FFFFFF", icon: icons.facebook },
-  { label: "Compartir en WhatsApp", href: `https://wa.me/?text=${text}%20${url}`, bg: "#25D366", fg: "#FFFFFF", icon: icons.whatsapp },
-  { label: "Compartir en Telegram", href: `https://t.me/share/url?url=${url}&text=${text}`, bg: "#229ED9", fg: "#FFFFFF", icon: icons.telegram },
-  { label: "Compartir en X (Twitter)", href: `https://twitter.com/intent/tweet?url=${url}&text=${text}`, bg: "#000000", fg: "#FFFFFF", icon: icons.x, outline: true },
-  { label: "Compartir por correo", href: `mailto:?subject=${text}&body=M%C3%BAsica%20andina%20en%20vivo%3A%20${url}`, bg: "#F5F1E8", fg: "#11151B", icon: icons.mail },
+  { label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${url}`, bg: "#1877F2", fg: "#FFFFFF", icon: icons.facebook },
+  { label: "WhatsApp", href: `https://wa.me/?text=${text}%20${url}`, bg: "#25D366", fg: "#0B2A17", icon: icons.whatsapp },
 ];
 ---
 
@@ -23,7 +20,7 @@ const social = [
     <header class="ea-wrap ea-header">
       <a href="#top" class="ea-logo">Estampas Andinas</a>
       <nav class="ea-nav" aria-label="Principal">
-        <a href="#anteriores" data-needs-episodes hidden>Programas anteriores</a>
+        <a href="#anteriores" data-has-episodes hidden>Programas anteriores</a>
         <a href="#programacion">Horario</a>
       </nav>
       <div class="ea-m-top">
@@ -57,14 +54,15 @@ const social = [
           {
             social.map((s) => (
               <a
-                class:list={["ea-social", { "is-outline": s.outline }]}
+                class="ea-share-pill"
                 href={s.href}
                 target="_blank"
                 rel="noopener"
-                aria-label={s.label}
                 style={`background: ${s.bg}; color: ${s.fg}`}
-                set:html={s.icon}
-              />
+              >
+                <span set:html={s.icon} />
+                <span>{s.label}</span>
+              </a>
             ))
           }
           <button type="button" class="ea-copy" data-copy>
@@ -80,7 +78,7 @@ const social = [
       </section>
 
       <div class="ea-grid">
-        <section id="anteriores" class="ea-panel ea-sheet" data-sheet-panel="episodes" data-needs-episodes aria-labelledby="h-anteriores" hidden>
+        <section id="anteriores" class="ea-panel ea-sheet" data-sheet-panel="episodes" data-needs-episodes aria-labelledby="h-anteriores">
           <div class="ea-panel-head">
             <h2 class="ea-h2" id="h-anteriores">Programas anteriores</h2>
             <button type="button" class="ea-close" data-close aria-label="Cerrar" set:html={icons.close} />
@@ -92,10 +90,10 @@ const social = [
         <section id="recien" class="ea-panel ea-sheet" data-sheet-panel="recent" aria-labelledby="h-recien">
           <div class="ea-panel-head">
             <h2 class="ea-h2" id="h-recien">Sonó recién</h2>
+            <button type="button" class="ea-more ea-more-inline" data-history-more hidden>Ver más</button>
             <button type="button" class="ea-close" data-close aria-label="Cerrar" set:html={icons.close} />
           </div>
           <ol class="ea-list" data-history><li class="ea-empty">Cargando…</li></ol>
-          <button type="button" class="ea-more" data-history-more hidden>Ver canciones anteriores</button>
         </section>
 
         <section id="programacion" class="ea-panel ea-schedule" aria-labelledby="h-horario">

@@ -169,7 +169,8 @@ function setArt(img: HTMLImageElement, url: string | null) {
 }
 
 // Recently played
-const VISIBLE_SONGS = 5;
+const wide = window.matchMedia ? window.matchMedia("(min-width: 768px)").matches : true;
+const VISIBLE_SONGS = wide ? 3 : 5; // laptops show everything without scrolling
 let historyExpanded = false;
 let renderedHistory: HistoryItem[] | null = null;
 let renderedMinute = -1;
@@ -217,7 +218,7 @@ function renderHistory(items: HistoryItem[]) {
   });
   const extra = items.length - VISIBLE_SONGS;
   el.historyMore.hidden = extra <= 0;
-  el.historyMore.textContent = historyExpanded ? "Ver menos" : `Ver ${extra} canciones anteriores`;
+  el.historyMore.textContent = historyExpanded ? "Ver menos" : `Ver ${extra} más`;
   el.historyMore.setAttribute("aria-expanded", String(historyExpanded));
 }
 el.historyMore.addEventListener("click", () => {
@@ -226,7 +227,7 @@ el.historyMore.addEventListener("click", () => {
 });
 
 // Recorded shows
-const VISIBLE_EPISODES = 6;
+const VISIBLE_EPISODES = wide ? 100 : 6; // the tall desktop panel scrolls by itself
 let episodesExpanded = false;
 let renderedEpisodes: Episode[] | null = null;
 const episodeRows = new Map<string, { li: HTMLElement; btn: HTMLButtonElement }>();
@@ -352,11 +353,12 @@ function render(s: PlayerState) {
   if (renderedHistory !== s.history || renderedMinute !== Math.floor(Date.now() / 60000)) {
     renderHistory(s.history);
   }
-  if (renderedEpisodes !== s.episodes) {
-    renderEpisodes(s.episodes);
-    qa("[data-needs-episodes]").forEach((n) => (n.hidden = s.episodes.length === 0));
-    qa('[data-open="episodes"]').forEach((n) => (n.hidden = s.episodes.length === 0));
-  }
+  if (renderedEpisodes !== s.episodes) renderEpisodes(s.episodes);
+  // The panel is reserved from the start and only hidden once we know there are no shows.
+  const noShows = s.episodesLoaded && s.episodes.length === 0;
+  qa("[data-needs-episodes]").forEach((n) => (n.hidden = noShows));
+  q("main")?.classList.toggle("ea-no-ep", noShows);
+  qa("[data-has-episodes]").forEach((n) => (n.hidden = s.episodes.length === 0));
   episodeRows.forEach((row, id) => {
     const active = !!episodeMode && s.episode!.id === id;
     row.li.classList.toggle("is-active", active);
@@ -367,5 +369,4 @@ function render(s: PlayerState) {
 
 player.subscribe(render);
 // episode buttons of the mobile bar are hidden until shows exist
-qa('[data-open="episodes"]').forEach((n) => (n.hidden = true));
 player.init();
