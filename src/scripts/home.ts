@@ -54,15 +54,14 @@ const fmt = (s: number) => {
 function nextShow(): string {
   const lima = new Date(Date.now() - 5 * 3600 * 1000);
   const day = lima.getUTCDay();
-  const mins = lima.getUTCHours() * 60 + lima.getUTCMinutes();
-  if (day === 0 && mins >= 7 * 60 && mins < 9 * 60) return "hoy, 7 a 9 a. m.";
-  let diff = ((7 - day) % 7) * 1440 + 7 * 60 - mins;
-  if (diff <= 0) diff += 7 * 1440;
-  const d = Math.floor(diff / 1440);
-  const h = Math.floor((diff % 1440) / 60);
-  const m = diff % 60;
-  const wait = d > 0 ? `${d} d ${h} h` : h > 0 ? `${h} h ${m} min` : `${m} min`;
-  return `domingo 7:00 a. m. · en ${wait}`;
+  const secs = lima.getUTCHours() * 3600 + lima.getUTCMinutes() * 60 + lima.getUTCSeconds();
+  if (day === 0 && secs >= 7 * 3600 && secs < 9 * 3600) return "hoy, 7 a 9 a. m.";
+  let diff = ((7 - day) % 7) * 86400 + 7 * 3600 - secs;
+  if (diff <= 0) diff += 7 * 86400;
+  const d = Math.floor(diff / 86400);
+  const two = (n: number) => String(n).padStart(2, "0");
+  const clock = `${two(Math.floor((diff % 86400) / 3600))}:${two(Math.floor((diff % 3600) / 60))}:${two(diff % 60)}`;
+  return `domingo 7:00 a. m. · en ${d > 0 ? `${d} d ` : ""}${clock}`;
 }
 
 // ---------- sheets and popovers ----------

@@ -2,7 +2,6 @@
 import Layout from "../layouts/Layout.astro";
 import PlayerBar from "../components/home/PlayerBar.astro";
 import { icons } from "../components/home/icons";
-import { RADIO_PUBLIC_PAGE_URL } from "../components/radio/config";
 import "../styles/home.css";
 
 const site = "https://www.estampasandinas.com";
@@ -110,16 +109,6 @@ const social = [
         </section>
       </div>
     </main>
-
-    <footer class="ea-footer">
-      <div class="ea-wrap">
-        <span>Estampas Andinas · con Orestes Damián</span>
-        <span
-          >estampasandinas.com ·
-          <a href={RADIO_PUBLIC_PAGE_URL} target="_blank" rel="noopener">Reproductor alternativo</a></span
-        >
-      </div>
-    </footer>
 
     <PlayerBar />
   </div>

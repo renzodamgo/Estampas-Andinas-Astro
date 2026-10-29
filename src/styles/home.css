@@ -62,7 +62,7 @@ html {
   position: relative;
   z-index: 1;
 }
-/* The mobile sheets live inside <main>; keep it above the footer. */
+/* The mobile sheets live inside <main>; keep them above the other blocks. */
 .ea-page > .ea-main {
   z-index: 5;
 }
@@ -245,6 +245,10 @@ html {
 }
 .ea-nextline strong {
   color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+[data-next] {
+  font-variant-numeric: tabular-nums;
 }
 .ea-panel {
   background: rgba(17, 21, 27, 0.84);
@@ -489,27 +493,6 @@ html {
   color: var(--ea-muted);
 }
 
-/* ---------- Footer ---------- */
-.ea-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-.ea-footer .ea-wrap {
-  padding-top: 20px;
-  padding-bottom: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 17px;
-  color: var(--ea-muted);
-}
-.ea-footer a {
-  display: inline-block;
-  padding: 12px 4px;
-  color: var(--ea-muted) !important;
-  text-decoration: underline;
-}
-
 /* ---------- Player bar ---------- */
 .ea-bar {
   position: fixed;
@@ -524,10 +507,9 @@ html {
   box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.35);
 }
 .ea-bar-inner {
-  position: relative;
-  max-width: 1180px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 12px 24px;
+  padding: 12px 32px;
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr) auto auto auto auto;
   grid-template-areas: "play art info vol wa share qual";
@@ -711,9 +693,9 @@ html {
 }
 .ea-bar-line {
   position: absolute;
-  top: -13px;
-  left: -24px;
-  right: -24px;
+  top: -1px;
+  left: 0;
+  right: 0;
   height: 3px;
   background: rgba(255, 255, 255, 0.12);
 }
@@ -742,7 +724,7 @@ html {
 /* Popovers over the bar */
 .ea-pop {
   position: absolute;
-  right: 24px;
+  right: 32px;
   bottom: calc(100% + 12px);
   width: 340px;
   padding: 16px 18px;
@@ -1070,6 +1052,7 @@ html {
     background: rgba(25, 30, 37, 0.97);
   }
   .ea-bar-inner {
+    position: relative;
     padding: 14px 16px 16px;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     grid-template-areas:
