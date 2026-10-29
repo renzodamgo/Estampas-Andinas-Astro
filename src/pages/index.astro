@@ -8,12 +8,12 @@ const site = "https://www.estampasandinas.com";
 const text = encodeURIComponent("Escucha Estampas Andinas");
 const url = encodeURIComponent(site);
 const social = [
-  { label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${url}`, bg: "#1877F2", fg: "#FFFFFF", icon: icons.facebook },
+  { label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${url}`, bg: "#1565D8", fg: "#FFFFFF", icon: icons.facebook },
   { label: "WhatsApp", href: `https://wa.me/?text=${text}%20${url}`, bg: "#25D366", fg: "#0B2A17", icon: icons.whatsapp },
 ];
 ---
 
-<Layout title="Estampas Andinas por Orestes Damián">
+<Layout title="Estampas Andinas | Radio de música andina y huaynos en vivo">
   <div class="ea-page" id="top" data-page>
     <a class="ea-skip" href="#escuchar">Saltar al contenido</a>
 
@@ -32,6 +32,13 @@ const social = [
     </header>
 
     <main id="escuchar" class="ea-wrap ea-main">
+      <noscript>
+        <p class="ea-noscript">
+          Para escuchar la radio desde esta página necesitas activar JavaScript. También puedes
+          <a href="https://radio.estampasandinas.com/public/estampas_andinas">abrir el reproductor de Estampas Andinas</a>
+          directamente.
+        </p>
+      </noscript>
       <section class="ea-hero" aria-labelledby="titulo">
         <p class="ea-eyebrow">Radio por internet · música andina las 24 horas</p>
         <h1 class="ea-h1" id="titulo">Estampas Andinas</h1>

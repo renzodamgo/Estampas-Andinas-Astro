@@ -1228,3 +1228,13 @@ html {
     width: auto;
   }
 }
+
+/* Shown only when JavaScript is off */
+.ea-noscript {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(17, 21, 27, 0.84);
+  font-size: 18px;
+}
