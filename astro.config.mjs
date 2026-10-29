@@ -1,18 +1,16 @@
 // @ts-check
 import { defineConfig } from "astro/config";
-
-import tailwind from "@astrojs/tailwind";
-
-import vercel from "@astrojs/vercel/static";
+import tailwindcss from "@tailwindcss/vite";
+import vercel from "@astrojs/vercel";
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [tailwind()],
   output: "static",
   vite: {
+    plugins: [tailwindcss()],
     build: {
       // Older Android WebViews and iOS 11+: transpile ?. and ?? down.
-      target: ["es2017", "chrome61", "safari11", "firefox60"],
+      target: ["chrome61", "safari11", "firefox60"],
     },
   },
   adapter: vercel({
