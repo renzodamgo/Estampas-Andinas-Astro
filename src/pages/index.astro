@@ -8,6 +8,7 @@ import "../styles/home.css";
 
 <Layout title="Estampas Andinas por Orestes Damián">
   <div class="ea-page" id="top">
+    <a class="ea-skip" href="#escuchar">Saltar al reproductor</a>
     <div class="ea-first">
       <header class="ea-wrap ea-header">
         <a href="#top" class="ea-logo">Estampas Andinas</a>
@@ -26,6 +27,7 @@ import "../styles/home.css";
       </header>
 
       <main id="escuchar" class="ea-wrap ea-main">
+        <h1 class="ea-h1-mobile">Estampas Andinas, radio por internet</h1>
         <section class="ea-hero">
           <div class="ea-eyebrow">
             <span class="ea-live-dot"></span><span data-eyebrow>Radio por internet</span>
@@ -44,8 +46,6 @@ import "../styles/home.css";
         <section class="ea-player-section" aria-label="Reproductor">
           <LivePlayer />
         </section>
-      </main>
-
       <a
         class="ea-fab"
         href={WHATSAPP_URL}
@@ -62,23 +62,26 @@ import "../styles/home.css";
           height="68"
         />
       </a>
+      </main>
+
+
     </div>
 
     <PastShows />
 
-    <section class="ea-wrap ea-lower">
-      <div class="ea-col">
-        <h2 class="ea-h2">Sonó recién</h2>
+    <div class="ea-wrap ea-lower">
+      <section class="ea-col" aria-labelledby="h-recien">
+        <h2 class="ea-h2" id="h-recien">Sonó recién</h2>
         <ol class="ea-history" data-history aria-live="off">
           <li class="ea-empty">Cargando…</li>
         </ol>
         <button type="button" class="ea-more" data-history-more hidden>
           Ver canciones anteriores
         </button>
-      </div>
+      </section>
 
-      <div id="programacion" class="ea-col">
-        <h2 class="ea-h2">Programación</h2>
+      <section id="programacion" class="ea-col" aria-labelledby="h-programacion">
+        <h2 class="ea-h2" id="h-programacion">Programación</h2>
         <div class="ea-card ea-glass">
           <div class="ea-kicker">En vivo</div>
           <div class="ea-slot">Todos los domingos, 7 a 9 a. m.</div>
@@ -95,8 +98,8 @@ import "../styles/home.css";
             >Envía tu mensaje por WhatsApp</a
           >
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
 
     <footer class="ea-footer">
       <div class="ea-wrap">

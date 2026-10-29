@@ -4,6 +4,7 @@ interface Props {
   title: string;
 }
 import "@fontsource-variable/josefin-slab";
+import fontUrl from "@fontsource-variable/josefin-slab/files/josefin-slab-latin-wght-normal.woff2?url";
 const { title } = Astro.props;
 const siteUrl = "https://www.estampasandinas.com";
 const description =
@@ -17,6 +18,24 @@ const shareImage = `${siteUrl}/og-image.jpg`;
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#11151b" />
+    <link rel="preconnect" href="https://radio.estampasandinas.com" crossorigin />
+    <link rel="preconnect" href="https://radio.estampasandinas.com" />
+    <link
+      rel="preload"
+      href={fontUrl}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script is:inline>
+      // 2G or Data Saver: skip the background photo to save data.
+      try {
+        var c = navigator.connection;
+        if (c && (c.saveData || /(^|-)2g$/.test(c.effectiveType))) {
+          document.documentElement.className += " ea-lite";
+        }
+      } catch (e) {}
+    </script>
     <link rel="canonical" href={siteUrl + "/"} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Estampas Andinas" />

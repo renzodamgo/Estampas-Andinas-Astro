@@ -1,17 +1,18 @@
 ---
-import fallbackArt from "../../../public/Assets/estampa-mobile.webp";
+import fallbackArt from "../../../public/Assets/logo-art.webp";
 import { PODCASTS_URL } from "../radio/config";
 ---
 
 <section
   id="programas"
   class="ea-wrap ea-shows"
+  aria-labelledby="h-programas"
   data-shows
   data-podcasts-url={PODCASTS_URL}
   data-fallback-art={fallbackArt.src}
   hidden
 >
-  <h2 class="ea-h2">Programas anteriores</h2>
+  <h2 class="ea-h2" id="h-programas">Programas anteriores</h2>
   <p class="ea-shows-sub">Escucha los programas grabados cuando quieras.</p>
   <ol class="ea-episodes" data-episodes></ol>
   <button type="button" class="ea-more" data-episodes-more hidden>
@@ -79,8 +80,8 @@ import { PODCASTS_URL } from "../radio/config";
             .catch(() => [] as Episode[]),
         ),
       );
-      episodes = lists
-        .flat()
+      episodes = ([] as Episode[])
+        .concat(...lists)
         .filter((e) => e.is_published !== false && e.has_media !== false)
         .sort((a, b) => b.publish_at - a.publish_at);
     } catch {
@@ -164,7 +165,7 @@ import { PODCASTS_URL } from "../radio/config";
 
     // ---------- render ----------
     function render() {
-      list.replaceChildren();
+      list.textContent = "";
       episodes.forEach((ep, index) => {
         const li = document.createElement("li");
         li.className = "ea-ep";
