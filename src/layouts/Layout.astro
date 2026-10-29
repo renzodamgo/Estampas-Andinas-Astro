@@ -5,16 +5,32 @@ interface Props {
 }
 import "@fontsource-variable/josefin-slab";
 const { title } = Astro.props;
+const siteUrl = "https://www.estampasandinas.com";
+const description =
+  "Radio por internet de música andina y huaynos tarmeños. Todos los domingos de 7 a 9 a. m. con Orestes Damián.";
+const shareImage = `${siteUrl}/og-image.jpg`;
 ---
 
 <!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="description"
-      content="Todos los domingos de 7 a 9 AM, radio por internet de música andina"
-    />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#11151b" />
+    <link rel="canonical" href={siteUrl + "/"} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Estampas Andinas" />
+    <meta property="og:locale" content="es_PE" />
+    <meta property="og:url" content={siteUrl + "/"} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={shareImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={shareImage} />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
