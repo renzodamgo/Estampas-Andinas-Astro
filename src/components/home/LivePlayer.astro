@@ -118,7 +118,7 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
   </div>
   <label class="ea-saver" data-saver hidden>
     <input type="checkbox" data-saver-input />
-    <span data-saver-label>Ahorro de datos</span>
+    <span>Ahorro de datos<span class="ea-saver-detail" data-saver-label></span></span>
   </label>
   <div class="ea-msg" role="status" aria-live="polite" data-message></div>
 </div>
@@ -606,7 +606,7 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
           null;
         saverEl.hidden = !lowMount;
         if (lowMount) {
-          saverLabel.textContent = `Ahorro de datos (${lowMount.bitrate} kbps)`;
+          saverLabel.textContent = ` · ${lowMount.bitrate} kbps`;
           saverInput.checked = useSaver();
         }
 
