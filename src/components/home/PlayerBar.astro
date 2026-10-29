@@ -1,0 +1,117 @@
+---
+import fallbackArt from "../../../public/Assets/logo-art.webp";
+import { WHATSAPP_URL } from "../radio/config";
+import { icons } from "./icons";
+
+const site = "https://www.estampasandinas.com";
+const whatsappShare = `https://wa.me/?text=${encodeURIComponent(`Escucha Estampas Andinas ${site}`)}`;
+const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(site)}`;
+---
+
+<section class="ea-bar" data-bar aria-label="Reproductor" data-fallback-art={fallbackArt.src}>
+  <div class="ea-bar-inner">
+    <button type="button" class="ea-play" data-toggle aria-label="Reproducir en vivo">
+      <svg class="ea-icon-play" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"
+        ><path d="M8 5 L19 12 L8 19 Z" fill="currentColor"></path></svg
+      >
+      <svg class="ea-icon-pause" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"
+        ><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"></rect><rect
+          x="14"
+          y="5"
+          width="4"
+          height="14"
+          rx="1"
+          fill="currentColor"></rect></svg
+      >
+    </button>
+
+    <img class="ea-bar-art ea-art-fallback" data-art src={fallbackArt.src} alt="" width="52" height="52" />
+
+    <div class="ea-bar-info">
+      <div class="ea-bar-chiprow">
+        <span class="ea-chip" data-chip><span class="ea-live-dot ea-pulse" data-chip-dot hidden></span><span data-chip-text>MÚSICA 24 H</span></span>
+        <div class="ea-eq" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div class="ea-bar-title" data-title>Estampas Andinas</div>
+      <div class="ea-bar-sub" data-sub aria-live="polite">Música andina, huaynos tarmeños y más</div>
+      <button type="button" class="ea-golive" data-golive hidden>Volver a la radio en vivo</button>
+    </div>
+
+    <label class="ea-bar-vol" for="ea-volume">
+      <span set:html={icons.volume}></span>
+      <span class="ea-sr">Volumen</span>
+      <input id="ea-volume" type="range" min="0" max="100" value="80" data-volume />
+    </label>
+
+    <a class="ea-wa" href={WHATSAPP_URL} target="_blank" rel="noopener">
+      <span set:html={icons.whatsapp}></span>
+      <span data-wa-label>Saludar</span>
+    </a>
+
+    <button type="button" class="ea-ico ea-ico-ep" data-open="episodes" data-has-episodes hidden aria-expanded="false" aria-label="Programas anteriores">
+      <span set:html={icons.episodes}></span>
+    </button>
+    <button type="button" class="ea-ico ea-ico-rec" data-open="recent" aria-expanded="false" aria-label="Sonó recién">
+      <span set:html={icons.recent}></span>
+    </button>
+    <button type="button" class="ea-ico ea-ico-share" data-open="share" aria-expanded="false" aria-label="Compartir la radio">
+      <span set:html={icons.share}></span>
+    </button>
+    <button type="button" class="ea-ico ea-ico-qual" data-open="quality" aria-expanded="false" aria-label="Calidad de audio" hidden>
+      <span set:html={icons.quality}></span>
+    </button>
+
+    <div class="ea-bar-line">
+      <div class="ea-bar-fill" data-progress></div>
+      <input
+        type="range"
+        class="ea-bar-seek"
+        min="0"
+        max="1000"
+        value="0"
+        step="1"
+        data-seek
+        aria-label="Posición del programa"
+        hidden
+      />
+    </div>
+  </div>
+
+  <div class="ea-pop ea-pop-share" role="dialog" aria-label="Compartir la radio" data-pop="share" hidden>
+    <div class="ea-pop-head">
+      <h2 class="ea-pop-title">Compartir la radio</h2>
+      <button type="button" class="ea-close" data-close aria-label="Cerrar"><span set:html={icons.close}></span></button>
+    </div>
+    <div class="ea-share-grid">
+      <a class="ea-share-item" href={whatsappShare} target="_blank" rel="noopener">
+        <span class="ea-share-dot" style="background: #25D366" set:html={icons.whatsapp}></span>WhatsApp
+      </a>
+      <a class="ea-share-item" href={facebookShare} target="_blank" rel="noopener">
+        <span class="ea-share-dot" style="background: #1877F2" set:html={icons.facebook}></span>Facebook
+      </a>
+      <button type="button" class="ea-share-item" data-copy>
+        <span class="ea-share-dot" style="background: #2F3640" set:html={icons.link}></span>
+        <span data-copy-label>Copiar enlace</span>
+      </button>
+    </div>
+    <div class="ea-share-url">estampasandinas.com</div>
+  </div>
+
+  <div class="ea-pop ea-pop-quality" role="dialog" aria-label="Calidad de audio" data-pop="quality" hidden>
+    <div class="ea-pop-head">
+      <h2 class="ea-pop-title">Calidad de audio</h2>
+      <button type="button" class="ea-close" data-close aria-label="Cerrar"><span set:html={icons.close}></span></button>
+    </div>
+    <fieldset class="ea-quality">
+      <legend class="ea-sr">Calidad de audio</legend>
+      <label class="ea-quality-opt" data-quality-opt="normal">
+        <input type="radio" name="ea-quality" value="normal" />
+        <span><strong>Normal</strong><small>Mejor sonido</small></span>
+      </label>
+      <label class="ea-quality-opt" data-quality-opt="saver">
+        <input type="radio" name="ea-quality" value="saver" />
+        <span><strong>Ahorro de datos <span data-saver-kbps></span></strong><small>Gasta menos datos móviles</small></span>
+      </label>
+    </fieldset>
+  </div>
+</section>

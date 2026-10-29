@@ -1,116 +1,117 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import LivePlayer from "../components/home/LivePlayer.astro";
-import PastShows from "../components/home/PastShows.astro";
-import { RADIO_PUBLIC_PAGE_URL, WHATSAPP_URL } from "../components/radio/config";
+import PlayerBar from "../components/home/PlayerBar.astro";
+import { icons } from "../components/home/icons";
 import "../styles/home.css";
+
+const site = "https://www.estampasandinas.com";
+const text = encodeURIComponent("Escucha Estampas Andinas");
+const url = encodeURIComponent(site);
+const social = [
+  { label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${url}`, bg: "#1877F2", fg: "#FFFFFF", icon: icons.facebook },
+  { label: "WhatsApp", href: `https://wa.me/?text=${text}%20${url}`, bg: "#25D366", fg: "#0B2A17", icon: icons.whatsapp },
+];
 ---
 
 <Layout title="Estampas Andinas por Orestes Damián">
-  <div class="ea-page" id="top">
-    <a class="ea-skip" href="#escuchar">Saltar al reproductor</a>
-    <div class="ea-first">
-      <header class="ea-wrap ea-header">
-        <a href="#top" class="ea-logo">Estampas Andinas</a>
-        <nav class="ea-nav" aria-label="Principal">
-          <a href="#escuchar">Escuchar</a>
-          <a href="#programas" data-nav-shows hidden>Programas</a>
-          <a href="#programacion">Programación</a>
-          <a href={WHATSAPP_URL} class="ea-pill" target="_blank" rel="noopener"
-            >Envía tu saludo</a
-          >
-        </nav>
-        <span class="ea-live-chip"
-          ><span class="ea-live-dot"></span><span data-status-mirror>AL AIRE</span
-          ></span
-        >
-      </header>
+  <div class="ea-page" id="top" data-page>
+    <a class="ea-skip" href="#escuchar">Saltar al contenido</a>
 
-      <main id="escuchar" class="ea-wrap ea-main">
-        <h1 class="ea-h1-mobile">Estampas Andinas, radio por internet</h1>
-        <section class="ea-hero">
-          <div class="ea-eyebrow">
-            <span class="ea-live-dot"></span><span data-eyebrow>Radio por internet</span>
-          </div>
-          <h1 class="ea-h1">Estampas Andinas</h1>
-          <p class="ea-tagline">Música andina, huaynos tarmeños y más.</p>
-          <p class="ea-next ea-next-desktop" data-next></p>
-          <div class="ea-actions">
-            <button type="button" class="ea-btn" data-hero-toggle>
-              Escuchar en vivo
-            </button>
-            <a href="#programacion" class="ea-btn-ghost">Ver horario</a>
-          </div>
-        </section>
-
-        <section class="ea-player-section" aria-label="Reproductor">
-          <LivePlayer />
-        </section>
-      <a
-        class="ea-fab"
-        href={WHATSAPP_URL}
-        target="_blank"
-        rel="noopener"
-        aria-label="Envía tu mensaje por WhatsApp"
-      >
-        <span class="ea-fab-bubble">Envía tu mensaje por WhatsApp</span>
-        <img
-          class="ea-fab-icon"
-          src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
-          alt=""
-          width="68"
-          height="68"
-        />
-      </a>
-      </main>
-
-
-    </div>
-
-    <PastShows />
-
-    <div class="ea-wrap ea-lower">
-      <section class="ea-col" aria-labelledby="h-recien">
-        <h2 class="ea-h2" id="h-recien">Sonó recién</h2>
-        <ol class="ea-history" data-history aria-live="off">
-          <li class="ea-empty">Cargando…</li>
-        </ol>
-        <button type="button" class="ea-more" data-history-more hidden>
-          Ver canciones anteriores
-        </button>
-      </section>
-
-      <section id="programacion" class="ea-col" aria-labelledby="h-programacion">
-        <h2 class="ea-h2" id="h-programacion">Programación</h2>
-        <div class="ea-card ea-glass">
-          <div class="ea-kicker">En vivo</div>
-          <div class="ea-slot">Todos los domingos, 7 a 9 a. m.</div>
-          <div class="ea-note">
-            Estampas Andinas con Orestes Damián Navarro. Hora de Perú.
-          </div>
-        </div>
-        <div class="ea-card ea-card-wa ea-glass">
-          <div>
-            <div class="ea-wa-title">Saludos y pedidos en vivo</div>
-            <div class="ea-wa-sub">Escríbenos durante el programa.</div>
-          </div>
-          <a href={WHATSAPP_URL} class="ea-wa-btn" target="_blank" rel="noopener"
-            >Envía tu mensaje por WhatsApp</a
-          >
-        </div>
-      </section>
-    </div>
-
-    <footer class="ea-footer">
-      <div class="ea-wrap">
-        <span>Estampas Andinas · con Orestes Damián</span>
-        <span
-          >estampasandinas.com ·
-          <a href={RADIO_PUBLIC_PAGE_URL} target="_blank" rel="noopener"
-            >Reproductor alternativo</a
-          ></span
+    <header class="ea-wrap ea-header">
+      <a href="#top" class="ea-logo">Estampas Andinas</a>
+      <nav class="ea-nav" aria-label="Principal">
+        <a href="#anteriores" data-has-episodes hidden>Programas anteriores</a>
+        <a href="#programacion">Horario</a>
+      </nav>
+      <div class="ea-m-top">
+        <span class="ea-m-label">Radio por internet</span>
+        <span class="ea-chip ea-chip-pill" data-pill
+          ><span class="ea-live-dot ea-pulse" data-pill-dot hidden></span><span data-pill-text>MÚSICA 24 H</span></span
         >
       </div>
-    </footer>
+    </header>
+
+    <main id="escuchar" class="ea-wrap ea-main">
+      <section class="ea-hero" aria-labelledby="titulo">
+        <p class="ea-eyebrow">Radio por internet · música andina las 24 horas</p>
+        <h1 class="ea-h1" id="titulo">Estampas Andinas</h1>
+        <p class="ea-tagline">
+          Música andina, huaynos tarmeños y más.<span class="ea-tagline-desktop"> Con Orestes Damián.</span>
+        </p>
+
+        <div class="ea-livebox ea-panel" data-livebox hidden>
+          <span class="ea-livebox-kicker"><span class="ea-live-dot ea-pulse"></span>EN VIVO AHORA</span>
+          <span class="ea-livebox-text"
+            ><span data-live-who>Orestes Damián</span> está al aire. Manda tu saludo o pedido desde el botón verde de abajo.</span
+          >
+        </div>
+        <p class="ea-nextline" data-nextline>
+          Ahora: música continua · Próximo en vivo: <strong data-next>domingo 7:00 a. m.</strong>
+        </p>
+
+        <div class="ea-sharebar">
+          <span class="ea-sharebar-label">Comparte la radio:</span>
+          {
+            social.map((s) => (
+              <a
+                class="ea-share-pill"
+                href={s.href}
+                target="_blank"
+                rel="noopener"
+                style={`background: ${s.bg}; color: ${s.fg}`}
+              >
+                <span set:html={s.icon} />
+                <span>{s.label}</span>
+              </a>
+            ))
+          }
+          <button type="button" class="ea-copy" data-copy>
+            <span set:html={icons.link} />
+            <span data-copy-label>Copiar enlace</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="ea-glass ea-m-schedule" aria-label="Horario en vivo">
+        <div class="ea-m-kicker" data-m-kicker>Próximo en vivo</div>
+        <div class="ea-m-row"><span>Domingos</span><span>7 a 9 a. m.</span></div>
+      </section>
+
+      <div class="ea-grid">
+        <section id="anteriores" class="ea-panel ea-sheet" data-sheet-panel="episodes" data-needs-episodes aria-labelledby="h-anteriores">
+          <div class="ea-panel-head">
+            <h2 class="ea-h2" id="h-anteriores">Programas anteriores</h2>
+            <button type="button" class="ea-close" data-close aria-label="Cerrar" set:html={icons.close} />
+          </div>
+          <ol class="ea-list" data-episodes></ol>
+          <button type="button" class="ea-more" data-episodes-more hidden>Ver más programas</button>
+        </section>
+
+        <section id="recien" class="ea-panel ea-sheet" data-sheet-panel="recent" aria-labelledby="h-recien">
+          <div class="ea-panel-head">
+            <h2 class="ea-h2" id="h-recien">Sonó recién</h2>
+            <button type="button" class="ea-more ea-more-inline" data-history-more hidden>Ver más</button>
+            <button type="button" class="ea-close" data-close aria-label="Cerrar" set:html={icons.close} />
+          </div>
+          <ol class="ea-list" data-history><li class="ea-empty">Cargando…</li></ol>
+        </section>
+
+        <section id="programacion" class="ea-panel ea-schedule" aria-labelledby="h-horario">
+          <h2 class="ea-h2" id="h-horario">Horario en vivo</h2>
+          <div class="ea-schedule-rows">
+            <div class="ea-schedule-row"><span>Domingos</span><span>7 a 9 a. m.</span></div>
+          </div>
+          <p class="ea-schedule-note">
+            Con Orestes Damián Navarro. Hora de Perú. Manda tus saludos y pedidos durante el programa.
+          </p>
+        </section>
+      </div>
+    </main>
+
+    <PlayerBar />
   </div>
 </Layout>
+
+<script>
+  import "../scripts/home";
+</script>
