@@ -31,20 +31,27 @@ html {
 .ea-page::before {
   content: "";
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 0;
   background:
     linear-gradient(
       180deg,
-      rgba(17, 21, 27, 0.25) 0,
-      rgba(17, 21, 27, 0.45) 40%,
-      rgba(17, 21, 27, 0.85) 70%,
+      rgba(17, 21, 27, 0.62) 0,
+      rgba(17, 21, 27, 0.5) 40%,
+      rgba(17, 21, 27, 0.86) 70%,
       rgba(17, 21, 27, 0.95) 100%
     ),
-    url("/Assets/bg.webp") center 40% / cover no-repeat,
+    linear-gradient(90deg, rgba(17, 21, 27, 0.55) 0, rgba(17, 21, 27, 0) 60%),
+    url("/Assets/bg-desktop.webp") center 40% / cover no-repeat,
     #2a3038;
 }
 
+.ea-lite .ea-page::before {
+  background: linear-gradient(180deg, #1b2129 0, var(--ea-bg) 70%);
+}
 .ea-page > * {
   position: relative;
   z-index: 1;
@@ -79,6 +86,8 @@ html {
   padding-bottom: 22px;
 }
 .ea-logo {
+  display: inline-block;
+  padding: 10px 0;
   font-family: var(--ea-slab);
   font-weight: 700;
   font-size: 24px;
@@ -130,6 +139,7 @@ html {
 /* ---------- Hero + player ---------- */
 .ea-main {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr));
   gap: 56px;
   align-items: center;
@@ -155,6 +165,7 @@ html {
   margin: 0;
   font-family: var(--ea-slab);
   font-weight: 600;
+  font-size: 64px;
   font-size: clamp(54px, 8vw, 96px);
   line-height: 0.95;
 }
@@ -440,6 +451,7 @@ html {
 /* ---------- History + schedule ---------- */
 .ea-lower {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
   gap: 40px;
   padding-top: 24px;
@@ -624,10 +636,13 @@ html {
   justify-content: space-between;
   gap: 12px;
   font-size: 17px;
-  color: var(--ea-dim);
+  color: var(--ea-muted);
 }
 .ea-footer a {
-  color: var(--ea-dim);
+  display: inline-block;
+  padding: 12px 4px;
+  color: var(--ea-muted);
+  text-decoration: underline;
 }
 
 /* ---------- WhatsApp button ---------- */
@@ -665,17 +680,18 @@ html {
   }
   .ea-page::before {
     position: absolute;
+    height: 100vh;
     height: 100svh;
     background:
       linear-gradient(
         180deg,
-        rgba(17, 21, 27, 0.55) 0%,
-        rgba(17, 21, 27, 0) 22%,
+        rgba(17, 21, 27, 0.78) 0%,
+        rgba(17, 21, 27, 0) 24%,
         rgba(17, 21, 27, 0) 38%,
         rgba(17, 21, 27, 0.92) 62%,
         var(--ea-bg) 100%
       ),
-      url("/Assets/bg.webp") 52% top / auto 70% no-repeat,
+      url("/Assets/bg-mobile.webp") 52% top / auto 70% no-repeat,
       #2a3038;
   }
   .ea-wrap {
@@ -684,6 +700,7 @@ html {
   }
   .ea-first {
     position: relative;
+    min-height: 100vh;
     min-height: 100svh;
     display: flex;
     flex-direction: column;
@@ -974,6 +991,7 @@ html {
     position: fixed;
     left: 12px;
     right: 12px;
+    bottom: 12px;
     bottom: calc(12px + env(safe-area-inset-bottom));
     z-index: 60;
     display: flex;
@@ -988,15 +1006,19 @@ html {
     box-shadow: 0 14px 30px -10px rgba(0, 0, 0, 0.6);
     transform: translateY(140%);
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
     transition:
       transform 0.25s ease,
-      opacity 0.25s ease;
+      opacity 0.25s ease,
+      visibility 0s linear 0.25s;
   }
   .ea-mini.is-visible {
     transform: none;
     opacity: 1;
+    visibility: visible;
     pointer-events: auto;
+    transition-delay: 0s;
   }
   .ea-mini-art {
     width: 44px;
@@ -1064,5 +1086,123 @@ html {
 @media (prefers-reduced-motion: reduce) {
   .ea-mini {
     transition: none;
+  }
+}
+
+/* ---------- Accessibility ---------- */
+.ea-page a:focus-visible,
+.ea-page button:focus-visible,
+.ea-page input:focus-visible {
+  outline: 3px solid var(--ea-green-hover);
+  outline-offset: 3px;
+}
+.ea-skip {
+  position: absolute;
+  left: 12px;
+  top: -80px;
+  z-index: 100;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ea-bg) !important;
+  font-weight: 700;
+  text-decoration: none;
+  text-shadow: none;
+}
+.ea-skip:focus {
+  top: 12px;
+}
+/* Mobile hides the big hero, so keep a real h1 for screen readers. */
+.ea-h1-mobile {
+  display: none;
+}
+@media (max-width: 767px) {
+  .ea-h1-mobile {
+    display: block;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    margin: 0;
+  }
+}
+
+/* ---------- Autoplay blocked: make the play button the obvious next step ---------- */
+.ea-msg {
+  color: var(--ea-muted);
+  font-weight: 600;
+}
+.ea-msg.is-error {
+  color: #ffb4ab;
+}
+@keyframes ea-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 18px rgba(37, 211, 102, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+  }
+}
+.ea-page.needs-tap .ea-play,
+.ea-page.needs-tap .ea-btn {
+  animation: ea-pulse 1.8s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ea-page.needs-tap .ea-play,
+  .ea-page.needs-tap .ea-btn {
+    animation: none;
+    outline: 3px solid var(--ea-green-hover);
+    outline-offset: 3px;
+  }
+}
+
+/* ---------- Data saver toggle ---------- */
+.ea-saver {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  color: var(--ea-muted);
+  cursor: pointer;
+}
+.ea-saver[hidden] {
+  display: none;
+}
+.ea-saver input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--ea-green);
+}
+
+/* ---------- Older browsers without flex "gap" (iOS < 14.1, old WebViews) ---------- */
+@supports not (aspect-ratio: 1 / 1) {
+  .ea-actions > * + *,
+  .ea-controls > * + *,
+  .ea-vol > * + *,
+  .ea-track > * + *,
+  .ea-status-row > * + *,
+  .ea-eyebrow > * + *,
+  .ea-row > * + *,
+  .ea-ep > * + *,
+  .ea-saver > * + *,
+  .ea-fab > * + * {
+    margin-left: 14px;
+  }
+  .ea-hero > * + *,
+  .ea-col > * + *,
+  .ea-track-info > * + *,
+  .ea-player > * + *,
+  .ea-card > * + *,
+  .ea-progress-wrap > * + *,
+  .ea-shows > * + * {
+    margin-top: 14px;
+  }
+  .ea-header > * + * {
+    margin-left: 16px;
   }
 }

@@ -1,5 +1,5 @@
 ---
-import fallbackArt from "../../../public/Assets/estampa-mobile.webp";
+import fallbackArt from "../../../public/Assets/logo-art.webp";
 import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
 ---
 
@@ -116,10 +116,14 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
       <input id="ea-volume" type="range" min="0" max="100" value="80" data-volume />
     </label>
   </div>
+  <label class="ea-saver" data-saver hidden>
+    <input type="checkbox" data-saver-input />
+    <span data-saver-label>Ahorro de datos</span>
+  </label>
   <div class="ea-msg" role="status" aria-live="polite" data-message></div>
 </div>
 
-<div class="ea-mini" data-mini aria-label="Reproductor">
+<section class="ea-mini" data-mini aria-label="Reproductor compacto">
   <img class="ea-mini-art ea-art-fallback" data-mini-art src={fallbackArt.src} alt="" width="44" height="44" />
   <button type="button" class="ea-mini-text" data-mini-scroll aria-label="Volver al reproductor">
     <span class="ea-mini-title" data-mini-title>Estampas Andinas</span>
@@ -129,7 +133,7 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     <svg class="ea-icon-play" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z" fill="currentColor"></path></svg>
     <svg class="ea-icon-pause" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"></rect><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"></rect></svg>
   </button>
-</div>
+</section>
 
 <script>
   type Song = {
@@ -143,6 +147,30 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
   const FALLBACK_ART = document
     .querySelector<HTMLImageElement>("[data-art]")!
     .getAttribute("src")!;
+
+  // Network Information API (Chrome/Android). Missing elsewhere, so every check is optional.
+  const conn = (navigator as unknown as { connection?: { saveData?: boolean; effectiveType?: string } })
+    .connection;
+  const slowNet = () =>
+    !!conn && (!!conn.saveData || /(^|-)[23]g$/.test(conn.effectiveType || ""));
+  const verySlowNet = () =>
+    !!conn && (!!conn.saveData || /(^|-)2g$/.test(conn.effectiveType || ""));
+  const store = {
+    get(k: string) {
+      try {
+        return localStorage.getItem(k);
+      } catch {
+        return null;
+      }
+    },
+    set(k: string, v: string) {
+      try {
+        localStorage.setItem(k, v);
+      } catch {
+        /* private mode */
+      }
+    },
+  };
 
   const root = document.querySelector<HTMLElement>("[data-live-player]");
   if (root) init(root);
@@ -199,6 +227,18 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     const audio = new Audio();
     audio.preload = "none";
 
+    // Optional lower-bitrate mount ("Ahorro de datos"), discovered from the API.
+    const saverEl = $("data-saver");
+    const saverInput = $<HTMLInputElement>("data-saver-input");
+    const saverLabel = $("data-saver-label");
+    let defaultStream = streamUrl;
+    let lowMount: { url: string; bitrate: number } | null = null;
+    const saverPref = () => store.get("ea-saver"); // "1", "0" or null (= automatic)
+    const useSaver = () =>
+      saverPref() === "1" || (saverPref() === null && slowNet());
+    const currentStream = () =>
+      useSaver() && lowMount ? lowMount.url : defaultStream;
+
     // ---------- helpers ----------
     const fmt = (s: number) => {
       s = Math.max(0, Math.floor(s));
@@ -209,12 +249,15 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     // AzuraCast answers with its own generic cover when a song has no art.
     // Resolve it once and fall back to our logo in that case.
     function resolveArt(url?: string): Promise<string | null> {
-      if (!url) return Promise.resolve(null);
+      if (!url || verySlowNet()) return Promise.resolve(null);
       let hit = artCache.get(url);
       if (!hit) {
         hit = fetch(url)
           .then(async (res) => {
-            if (!res.ok || res.url.includes("generic_song")) return null;
+            if (!res.ok || res.url.includes("generic_song")) {
+              if (res.body && res.body.cancel) void res.body.cancel();
+              return null;
+            }
             return URL.createObjectURL(await res.blob());
           })
           .catch(() => null);
@@ -307,10 +350,12 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     // ---------- playback ----------
     async function play(auto = false) {
       messageEl.textContent = "";
+      messageEl.classList.remove("is-error");
+      page.classList.remove("needs-tap");
       loading = true;
       renderState();
       // Reload so we join the live edge instead of resuming a stale buffer.
-      audio.src = `${streamUrl}?t=${Date.now()}`;
+      audio.src = `${currentStream()}?t=${Date.now()}`;
       try {
         await audio.play();
       } catch {
@@ -318,8 +363,10 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
         playing = false;
         audio.removeAttribute("src");
         messageEl.textContent = auto
-          ? "Toca la pantalla para empezar a escuchar."
+          ? "Toca el botón verde para escuchar."
           : "No se pudo reproducir. Intenta de nuevo en unos segundos.";
+        messageEl.classList.toggle("is-error", !auto);
+        page.classList.toggle("needs-tap", auto);
         renderState();
         if (auto) armFirstGesture();
       }
@@ -327,6 +374,7 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
 
     function stop() {
       userStopped = true;
+      page.classList.remove("needs-tap");
       disarmFirstGesture();
       audio.pause();
       audio.removeAttribute("src");
@@ -369,6 +417,7 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     };
 
     audio.addEventListener("playing", () => {
+      page.classList.remove("needs-tap");
       loading = false;
       playing = true;
       renderState();
@@ -386,6 +435,7 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
       stop();
       messageEl.textContent =
         "Se cortó la transmisión. Presiona reproducir para reconectar.";
+      messageEl.classList.add("is-error");
     });
 
     toggleEl.addEventListener("click", toggle);
@@ -398,14 +448,20 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     heroButtons.forEach((b) => b.addEventListener("click", toggle));
 
     // ---------- volume ----------
-    const savedVolume = Number(localStorage.getItem("ea-volume"));
-    if (!Number.isNaN(savedVolume) && localStorage.getItem("ea-volume")) {
+    const savedVolume = Number(store.get("ea-volume"));
+    if (!Number.isNaN(savedVolume) && store.get("ea-volume")) {
       volumeEl.value = String(savedVolume);
     }
     audio.volume = Number(volumeEl.value) / 100;
     volumeEl.addEventListener("input", () => {
       audio.volume = Number(volumeEl.value) / 100;
-      localStorage.setItem("ea-volume", volumeEl.value);
+      store.set("ea-volume", volumeEl.value);
+    });
+
+    // ---------- data saver ----------
+    saverInput.addEventListener("change", () => {
+      store.set("ea-saver", saverInput.checked ? "1" : "0");
+      if (playing || loading) void play(); // restart on the other mount
     });
 
     // ---------- share ----------
@@ -465,7 +521,7 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     function renderHistory(items: HistoryItem[]) {
       lastHistory = items;
       if (!historyList) return;
-      historyList.replaceChildren();
+      historyList.textContent = "";
       if (!items.length) {
         const li = document.createElement("li");
         li.className = "ea-empty";
@@ -486,7 +542,9 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
         img.loading = "lazy";
         setArt(img, null);
         thumb.append(img);
-        void resolveArt(item.song.art).then((r) => r && setArt(img, r));
+        if (!li.hidden) {
+          void resolveArt(item.song.art).then((r) => r && setArt(img, r));
+        }
 
         const text = document.createElement("div");
         text.className = "ea-row-text";
@@ -533,6 +591,25 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
         isLive = Boolean(data.live?.is_live);
         streamer = String(data.live?.streamer_name ?? "");
 
+        const mounts = (data.station?.mounts ?? []) as {
+          url: string;
+          bitrate: number;
+          is_default?: boolean;
+        }[];
+        const def = mounts.find((m) => m.is_default) ?? mounts[0];
+        if (def) defaultStream = def.url;
+        lowMount =
+          (def &&
+            mounts
+              .filter((m) => m !== def && m.bitrate && m.bitrate < def.bitrate)
+              .sort((a, b) => a.bitrate - b.bitrate)[0]) ||
+          null;
+        saverEl.hidden = !lowMount;
+        if (lowMount) {
+          saverLabel.textContent = `Ahorro de datos (${lowMount.bitrate} kbps)`;
+          saverInput.checked = useSaver();
+        }
+
         const np = data.now_playing ?? {};
         const song: Song = np.song ?? {};
         const title = song.title || song.text || "Estampas Andinas";
@@ -577,13 +654,15 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     let episodeMode = false;
     const syncMini = () =>
       mini.classList.toggle("is-visible", !playerInView && !episodeMode);
-    new IntersectionObserver(
-      ([entry]) => {
-        playerInView = entry.isIntersecting;
-        syncMini();
-      },
-      { threshold: 0.05 },
-    ).observe(root);
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(
+        ([entry]) => {
+          playerInView = entry.isIntersecting;
+          syncMini();
+        },
+        { threshold: 0.05 },
+      ).observe(root);
+    }
     window.addEventListener("ea:episode-playing", () => {
       episodeMode = true;
       syncMini();
@@ -594,9 +673,24 @@ import { NOW_PLAYING_URL, STREAM_URL } from "../radio/config";
     });
 
     renderState();
-    void refresh();
-    void play(true);
-    setInterval(refresh, 10_000);
+    const firstRefresh = refresh();
+    const startAudio = () => {
+      void firstRefresh.then(() => {
+        if (verySlowNet()) {
+          messageEl.textContent = "Ahorro de datos: toca el botón verde para escuchar.";
+          page.classList.add("needs-tap");
+        } else {
+          void play(true);
+        }
+      });
+    };
+    // Let the page and the photo finish loading before the stream competes for bandwidth.
+    if (document.readyState === "complete") startAudio();
+    else window.addEventListener("load", startAudio);
+    setInterval(() => {
+      if (document.hidden && !playing) return;
+      void refresh();
+    }, 15_000);
     setInterval(renderProgress, 1000);
     setInterval(renderNext, 30_000);
     document.addEventListener("visibilitychange", () => {
